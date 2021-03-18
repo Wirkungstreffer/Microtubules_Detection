@@ -391,7 +391,7 @@ gauss_2_copy = gauss_2.copy()
 seed = (int(center_x_list_2[1]), int(center_y_list_2[1]))
 
 cv2.floodFill(gauss_2_copy, None, seedPoint=seed, newVal=(255, 255, 255), loDiff=(5), upDiff=(5))
-seeds_point = cv2.circle(img_center_2, seed, 2, (0, 0, 255), cv2.FILLED, cv2.LINE_AA);
+seeds_point = cv2.circle(img_center_2, seed, 2, (0, 0, 0), cv2.FILLED, cv2.LINE_AA);
 
 cv2.imshow('flood_cv', gauss_2_copy)
 cv2.imshow('seed point', seeds_point)
