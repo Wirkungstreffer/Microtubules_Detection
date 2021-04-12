@@ -1,4 +1,5 @@
 import os
+os.environ['DISPLAY'] = ':1'
 from scipy.spatial import distance as dist
 from imutils import perspective
 from imutils import contours
@@ -391,7 +392,7 @@ gauss_2_copy = gauss_2.copy()
 seed = (int(center_x_list_2[1]), int(center_y_list_2[1]))
 
 cv2.floodFill(gauss_2_copy, None, seedPoint=seed, newVal=(255, 255, 255), loDiff=(5), upDiff=(5))
-seeds_point = cv2.circle(img_center_2, seed, 2, (0, 0, 0), cv2.FILLED, cv2.LINE_AA);
+seeds_point = cv2.circle(img_center_2, seed, 2, (0, 0, 0), cv2.FILLED, cv2.LINE_AA)
 
 cv2.imshow('flood_cv', gauss_2_copy)
 cv2.imshow('seed point', seeds_point)
@@ -399,7 +400,7 @@ cv2.imshow('seed point', seeds_point)
 #Flood fill in Skimage
 gauss_2_copy_2 = gauss_2.copy()
 
-flood_f = flood_fill(gauss_2_copy_2, (int(center_x_list_2[1]), int(center_y_list_2[1])), 255, tolerance=1)
+flood_f = flood_fill(gauss_2_copy_2, (int(center_x_list_2[1]), int(center_y_list_2[1])), 255, tolerance=3)
 fig, ax = plt.subplots(ncols=2, figsize=(10, 5))
 
 ax[0].imshow(gauss_2_copy_2, cmap=plt.cm.gray)
@@ -494,7 +495,7 @@ def regionGrow(img,seeds,thresh,p = 1):
 gauss_2_copy_3 = gauss_2.copy()
 #cv2.imshow('gauss_2_copy_3',gauss_2_copy_3)
 seeds = [Point(int(center_x_list_2[1]), int(center_y_list_2[1]))]#,Point(int(center_x_list_2[2]), int(center_y_list_2[2])),Point(int(center_x_list_2[3]), int(center_y_list_2[3]))]
-RGImg = regionGrow(gauss_2_copy_3, seeds, 3)
+RGImg = regionGrow(closing_2, seeds, 3)
 cv2.imshow('Region Growing',RGImg)
 
 cv2.waitKey(0)

@@ -1,4 +1,5 @@
 import os
+os.environ['DISPLAY'] = ':1'
 from scipy.spatial import distance as dist
 from imutils import perspective
 from imutils import contours
@@ -8,6 +9,10 @@ import argparse
 import imutils
 import cv2
 from cv2 import drawContours
+import math
+from typing import List
+from skimage import filters
+from networkx.algorithms.smallworld import sigma
 
 
 array_of_img = [] # this if for store all of the image data
@@ -25,7 +30,7 @@ def read_directory(directory):
         #print(img)
         print(array_of_img)
 
-Series_Tiff_Files = read_directory("Tiff_files")
+#Series_Tiff_Files = read_directory("Tiff_files")
 
 
 # center point
@@ -39,12 +44,12 @@ def midpoint(ptA, ptB):
 #args = vars(ap.parse_args())
 
 # read imgae
-tiff_image = cv2.imread("200818_xb_reaction2_6um003c1t150.tif", cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+tiff_image = cv2.imread("Composite_z001_c002.tif", cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
 image = cv2.normalize(tiff_image, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-cv2.imshow("Image", image)
 imgsize = image.shape
-#print(imgsize)
-
+print(imgsize)
+image_D_E = cv2.dilate(image, None, iterations=1) - cv2.erode(image, None, iterations=1) 
+#cv2.imshow("image_D_E", image_D_E)
 # gray grade
 #gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
@@ -56,18 +61,22 @@ median = cv2.medianBlur(image,3)
 #cv2.imshow("median", median)
 
 # gauss filter to denoise
-gauss = cv2.GaussianBlur(image, (3, 3), 0)
+gauss = cv2.GaussianBlur(image, (5, 5), 0)
+# NLM
+#nlm = cv2.fastNlMeansDenoising(image, None, 10 ,10,7,21)
 
 # edge detection
 #median = np.uint8(median)
-edged = cv2.Canny(median, 50, 160)
+edged = cv2.Canny(gauss, 20, 100)	
+#edged = filters.sobel(gauss)
 #cv2.imshow("edge", edged)
+#cv2.waitKey(0)
 
 # fill up the gap within objects
 edged = cv2.dilate(edged, None, iterations=1)
 edged = cv2.erode(edged, None, iterations=1)
 
-cv2.imshow("edge_filled", edged)
+#cv2.imshow("edge_filled", edged)
 
 # find objects
 cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -99,8 +108,8 @@ dB_list = []
 
 # for loop for all contour
 for c in cnts:
-	# if it's too samll, it might be noise, just ignore it
-	if cv2.contourArea(c) < 30:
+	# if it's too small, it might be noise, just ignore it
+	if cv2.contourArea(c) < 20:
 		continue
 
 	orig = image.copy()
@@ -174,8 +183,6 @@ trbrY_list = np.array(trbrY_list)
 #dA_list = np.array(dA_list)
 #print(dA_list,dB_list)
 
-print(len(tltrX_list))
-
 
 img = image.copy()
 for i in range(len(tltrX_list)):
@@ -185,10 +192,12 @@ for i in range(len(tltrX_list)):
 	cv2.putText(img, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 255, 255), 2)
 cv2.imshow("Image", img)
 
-
 img_box = image.copy()
 for k in range(len(boxes)):
     cv2.drawContours(img_box, [boxes[k].astype("int")], -1, (0, 255, 0), 2)
 #cv2.imshow("Image_box", img_box)
+
+orig = image.copy()
+cv2.imshow("Image_orig", orig)
 
 cv2.waitKey(0)

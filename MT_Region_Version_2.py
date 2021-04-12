@@ -1,4 +1,5 @@
 import os
+os.environ['DISPLAY'] = ':1'
 from scipy.spatial import distance as dist
 from imutils import perspective
 from imutils import contours
@@ -111,7 +112,7 @@ corners = np.int0(corners)
 
 for i in corners:
     x, y = i.ravel()
-    cv2.circle(gauss, (x, y), 4, (0, 0, 255), -1)
+    cv2.circle(gauss, (x, y), 4, (0, 0, 0), -1)
     
 cv2.imshow('Shi-Tomasi', gauss)
 
@@ -119,8 +120,8 @@ test_gray = cv2.cvtColor(test, cv2.COLOR_BGR2GRAY)
 gray_copy = test_gray.copy()
 seed = (2, 2)
 
-cv2.floodFill(test_gray, None, seedPoint=seed, newVal=(0, 0, 255), loDiff=(5, 5, 5, 5), upDiff=(5, 5, 5, 5))
-cv2.circle(test_gray, seed, 2, (0, 255, 0), cv2.FILLED, cv2.LINE_AA);
+cv2.floodFill(test_gray, None, seedPoint=seed, newVal=(0, 0, 0), loDiff=(5), upDiff=(5))
+cv2.circle(test_gray, seed, 2, (0, 0, 0), cv2.FILLED, cv2.LINE_AA);
 
 cv2.imshow('flood', test_gray)
 cv2.imshow('test', gray_copy)

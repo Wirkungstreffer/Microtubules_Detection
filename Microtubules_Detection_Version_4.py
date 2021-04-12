@@ -1,4 +1,5 @@
 import os
+os.environ['DISPLAY'] = ':1'
 from scipy.spatial import distance as dist
 from imutils import perspective
 from imutils import contours
@@ -13,7 +14,6 @@ from scipy import interpolate
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LinearRegression
 import pwlf
-
 
 array_of_img = [] # this if for store all of the image data
 # this function is for read image,the input is directory name
@@ -36,7 +36,6 @@ read_directory("Tiff_files")
 def midpoint(ptA, ptB):
 	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
-
 Length_Micotubulues = []
 
 for image in array_of_img:
@@ -51,11 +50,11 @@ for image in array_of_img:
 	#cv2.imshow("median", median)
 
 	# gauss filter to denoise
-	gauss = cv2.GaussianBlur(image, (3, 3), 0)
+	gauss = cv2.GaussianBlur(image, (5, 5), 0)
 
 	# edge detection
 	#median = np.uint8(median)
-	edged = cv2.Canny(median, 60, 160)
+	edged = cv2.Canny(gauss, 30, 120)
 	#cv2.imshow("edge", edged)
 
 	# fill up the gap within objects
@@ -155,8 +154,7 @@ for image in array_of_img:
 		cv2.putText(img, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
 		cv2.putText(img, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 255, 255), 2)
 	
-	#cv2.imshow("Image", img)
-
+	cv2.imshow("Image", img)
 
 	img_box = image.copy()
 	for k in range(len(boxes)):
@@ -166,11 +164,10 @@ for image in array_of_img:
 
 	cv2.waitKey(0)
 
-
 #test of the last one micotubulues for every image
 Case_Microtubules = []
 for m in Length_Micotubulues:
-    Case_Microtubules.append(m[-1])
+    Case_Microtubules.append(m[0])
 
 #scatter plot
 x = np.array([np.arange(0,len(Length_Micotubulues))])
@@ -184,7 +181,7 @@ x_l = np.array([np.arange(0,len(Length_Micotubulues))])
 y_l = Case_Microtubules
 
 my_pwlf = pwlf.PiecewiseLinFit(x_l, y_l)
-breaks = my_pwlf.fit(5)
+breaks = my_pwlf.fit(3)
 print(breaks)
 
 x_hat = np.linspace(x.min(), x.max(), 100)
