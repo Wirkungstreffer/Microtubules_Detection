@@ -86,5 +86,7 @@ Run MT_Length_Measurement_Testset.py to visualize and measure the length of pred
 
 
 
-
+#########################################################################
 Run Neural_Network_Training_Notebook.ipynb can get all the steps after Pre-training data process step 3.
+
+To transfer json file to image data, use console cd to the file, run $sh json_to_dataset.sh
