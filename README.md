@@ -5,16 +5,26 @@ Readme
 #########################################################################
 
 Recommended hardware environment:
+
 SWAP space >= 64GB
+
 VRAM >= 8GB
+
 Ram >= 32GB
+
 hard drive space >= 80GB
 
+
 Recommended software environment:
+
 GPU driver: nvidia-driver-450
+
 CUDA driver: V10.1
+
 Anaconda python-3.7
+
 Training semantic CNN could direct import conda env semantic_segmentation.yaml
+
 Training DeepLabCut could direct import conda env DLC.yaml
 
 #########################################################################
