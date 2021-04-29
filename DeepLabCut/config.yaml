@@ -1,0 +1,73 @@
+    # Project definitions (do not edit)
+Task: MT_Detection
+scorer: ZiXuan
+date: Apr7
+multianimalproject: true
+
+    # Project path (change when moving around)
+project_path: /home/ben/Microtubules_Detection/Deeplabcut_Test_1/MT_Detection-ZiXuan-2021-04-07
+
+    # Annotation data set configuration (and individual video cropping parameters)
+video_sets:
+  ? /home/ben/Microtubules_Detection/Deeplabcut_Test_1/MT_Detection-ZiXuan-2021-04-07/videos/200818_xb_reaction2_6um0003_cropped.avi
+  : crop: 0, 400, 0, 400
+individuals:
+- individual1
+- individual2
+- individual3
+- individual4
+- individual5
+- individual6
+- individual7
+- individual8
+- individual9
+- individual10
+uniquebodyparts: []
+multianimalbodyparts:
+- bodypart1
+- bodypart2
+skeleton:
+- - bodypart1
+  - bodypart2
+- - bodypart2
+  - bodypart3
+- - bodypart1
+  - bodypart3
+bodyparts: MULTI!
+start: 0
+stop: 1
+numframes2pick: 20
+
+    # Plotting configuration
+skeleton_color: black
+pcutoff: 0.6
+dotsize: 12
+alphavalue: 0.7
+colormap: plasma
+
+    # Training,Evaluation and Analysis configuration
+TrainingFraction:
+- 0.95
+iteration: 0
+default_net_type: resnet_50
+default_augmenter: multi-animal-imgaug
+snapshotindex: -1
+batch_size: 8
+
+    # Cropping Parameters (for analysis and outlier frame detection)
+cropping: false
+croppedtraining: true
+    #if cropping is true for analysis, then set the values here:
+x1: 0
+x2: 640
+y1: 277
+y2: 624
+
+    # Refinement configuration (parameters from annotation dataset configuration also relevant in this stage)
+corner2move2:
+- 50
+- 50
+move2corner: true
+video_sets_original:
+  /home/ben/Microtubules_Detection/Deeplabcut_Test_1/MT_Detection-ZiXuan-2021-04-07/videos/200818_xb_reaction2_6um0003.avi:
+    crop: 0, 1200, 0, 1200
