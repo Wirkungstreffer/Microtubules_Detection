@@ -60,7 +60,7 @@ Batch size: 2(Depend on VRAM)
 
 Epochs: 80(may stop early depend on the patients setting in EarlyStopping)
 
-Evaluation: evaluate the iou scores of images predictions and labels in the validation set.
+Evaluation: evaluate the iou scores between images predictions and labels in the validation set.
 
 
 
