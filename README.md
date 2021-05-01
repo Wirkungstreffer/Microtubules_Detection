@@ -30,9 +30,12 @@ Training DeepLabCut could direct import conda env DLC.yaml
 #########################################################################
 
 Data process:
+
 By using Fiji or NIS-Elements Viewer the original ND2 video file can be decomposed into 16bit tiff frame images. Copy the images into file Microtubules_Detection_Master/Data_Process/16bit_img_file
-Run  16bit_to_8bit_Transfer.py  to use normalization to convert the frames into 8bit .tiff images.
-Run  Convert_tiff_to_png.py  to transform format from tiff to png. This step is for the labeling, and may not be necessary for training and other detection methods.
+
+Run 16bit_to_8bit_Transfer.py to use normalization to convert the frames into 8bit .tiff images.
+
+Run Convert_tiff_to_png.py to transform format from tiff to png. This step is for the labeling, and may not be necessary for training and other detection methods.
 
 
 
@@ -69,8 +72,11 @@ Pre-training data process:
 Randomly separate the labeled data into 2 datasets with the percentile of 10% by running divide_data_for_training_and_testing.py(adjusting the parameter k to set the quantity of test set): training set 90%(333) and test set 10%(37), the test set could be used as a scoring dataset to verify the detection ability and accuracy of all methods (edge detection, region segmentation, semantic segmentation). 
 
 Apply augmentation(First do divide).py of training images set to generate 1500 augmented training data.
+
 Implement reflect padding  to enlarge the images from both datasets from size 1200x1200 to 1216x1216. (integrated in Neural_Network_Training.py)
+
 Divide the augmented training dataset into training set and validation set. (integrated in Neural_Network_Training.py)
+
 The label images from the training set and the validation set are being normalized to make sure the labels are [0, 1]. (integrated in Neural_Network_Training.py)
 
 
