@@ -181,7 +181,7 @@ callbacks = [#tf.keras.callbacks.EarlyStopping(patience = 4,monitor='val_iou_sco
 history = model.fit(x_train, y_train, 
                     batch_size = 2, 
                     #verbose = 1, 
-                    epochs = 2, 
+                    epochs = 60, 
                     callbacks=callbacks,
                     validation_data=(x_val, y_val)
                     #shuffle=False
