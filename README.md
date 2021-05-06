@@ -46,6 +46,4 @@ move the labels in folder "Label" to the repository folder "Microtubules_Detecti
 
 #########################################################################
 
-Run Neural_Network_Training_Notebook.ipynb can get all the steps after Pre-training data process step 3.
-
 To transfer json file to image data, use console cd to the file, run $sh json_to_dataset.sh
