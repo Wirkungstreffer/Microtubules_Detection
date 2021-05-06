@@ -11,7 +11,7 @@ import cv2
 def load_images(image_file_directory):
     # Create a image list
     images = []
-    
+
     # Check if the input folder exist
     if os.path.exists(image_file_directory)==False:
         raise FileNotFoundError( 'No such file or directory:'+ image_file_directory)
@@ -19,14 +19,14 @@ def load_images(image_file_directory):
     # Reading the images in the folder 
     for directory_path in glob.glob(image_file_directory):
         image_path = glob.glob(os.path.join(directory_path, '*.png'))
-        
+
         # Make sure reading sequence of the images is correctly according to the name sequence of images
         image_path.sort()
-        
+
         # Reading images, dd up into images list
         for i in image_path:     
             images.append(i)
-    
+
     return images
 
 
