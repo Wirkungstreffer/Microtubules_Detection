@@ -38,7 +38,12 @@ Guide:
 3. Extract the data, move the images in folder "Image" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/images",
 move the labels in folder "Label" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/labels".
 
-4.
+4. Run the script Divide_Data_for_Training_and_Testing.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/"
+
+5. Run the Augmentation.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/".
+
+6. Run the Neural_Network_Training.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/".
+
 #########################################################################
 
 Run Neural_Network_Training_Notebook.ipynb can get all the steps after Pre-training data process step 3.
