@@ -191,7 +191,12 @@ history = model.fit(x_train, y_train,
 model.save('./Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5')
 
 
+
 # Evaluate the model
+
+#########################################################################################################################
+
+# Evalutae the model by test set
 _, acc = model.evaluate(test_images, test_labels, batch_size = 1)
 print("Accuracy = ", (acc * 100.0), "%")
 
