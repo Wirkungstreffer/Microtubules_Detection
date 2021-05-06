@@ -29,69 +29,16 @@ Training DeepLabCut could direct import conda env DLC.yaml
 
 #########################################################################
 
-Data process:
+Guide:
 
-By using Fiji or NIS-Elements Viewer the original ND2 video file can be decomposed into 16bit tiff frame images. Copy the images into file Microtubules_Detection_Master/Data_Process/16bit_img_file
+1. Clone repository
 
-Run 16bit_to_8bit_Transfer.py to use normalization to convert the frames into 8bit .tiff images.
+2. Download data from the link https://drive.google.com/file/d/1uo9Oq5h7p7Uw4NPF8suhekrteepqilI4/view?usp=sharing
 
-Run Convert_tiff_to_png.py to transform format from tiff to png. This step is for the labeling, and may not be necessary for training and other detection methods.
+3. Extract the data, move the images in folder "Image" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/images",
+move the labels in folder "Label" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/labels".
 
-
-
-
-
-Semantic segmentation:
-
-Structure and settings introduce:
-
-U-Net convolutional neural network structure
-
-Encode: ResNet34 with initial weights imagenet
-
-Input/Output size:1216x1216
-
-Optimizer: Adam with learning rate 0.001
-
-Loss function: jaccard index
-
-Metrics: iou score
-
-Callbacks: ModelCheckpoint, Tensorboard, EarlyStopping
-
-Batch size: 2(Depend on VRAM)
-
-Epochs: 80(may stop early depend on the patients setting in EarlyStopping)
-
-Evaluation: evaluate the iou scores between images predictions and labels in the validation set.
-
-
-
-Pre-training data process:
-
-Randomly separate the labeled data into 2 datasets with the percentile of 10% by running divide_data_for_training_and_testing.py(adjusting the parameter k to set the quantity of test set): training set 90%(333) and test set 10%(37), the test set could be used as a scoring dataset to verify the detection ability and accuracy of all methods (edge detection, region segmentation, semantic segmentation). 
-
-Apply augmentation(First do divide).py of training images set to generate 1500 augmented training data.
-
-Implement reflect padding  to enlarge the images from both datasets from size 1200x1200 to 1216x1216. (integrated in Neural_Network_Training.py)
-
-Divide the augmented training dataset into training set and validation set. (integrated in Neural_Network_Training.py)
-
-The label images from the training set and the validation set are being normalized to make sure the labels are [0, 1]. (integrated in Neural_Network_Training.py)
-
-
-
-
-After-training:
-
-The trained neural network will be acquired as 'MT_1216_Semantic_Segmentation.h5'.
-
-Run Testset_Model_validation.py to get the predict segmentations of test set images. The predictions will be stored in Microtubules_Detection_Master/Semantic_Segmentation/training_data/test_predict_output.
-
-Run MT_Length_Measurement_Testset.py to visualize and measure the length of predicted microtubules, for further digitization of comparison with the test set labels and other detection methods.
-
-
-
+4.
 #########################################################################
 
 Run Neural_Network_Training_Notebook.ipynb can get all the steps after Pre-training data process step 3.
