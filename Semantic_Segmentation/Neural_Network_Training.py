@@ -30,8 +30,6 @@ tf.test.gpu_device_name()
 
 #########################################################################################################################
 
-# Date import and process 
-
 # Define a images loading and padding function, with the input loading data 1200x1200 png images and output 1216x1216 png images
 def load_and_padding_images(image_file_directory, channel):
 
