@@ -1,64 +1,65 @@
 import os 
 import numpy as np
 import pandas as pd
+import glob,os
+from PIL import Image
+
+# Define the input tiff images folder and output png images folder
+TIFF_IMAGE_FILE=r'Data_Process/8bit_tiff_file'
+PNG_IMAGE_FILE=r'Data_Process/png_file'
 
 
+# This function is for converting image format  
 def change_image_format_batch(src_path, tar_path, fmt_in, fmt_out ):
-  '''
-  Bildkonvertierung für alle Bilder im Stammordner von Ausgangformat in Zielforamt
-  Args:
-    src_path : 'string',  Stammordner,aus dem wir Bilder einlesen 
-    tar_path : 'string', Stammordner, wo wir Ergebnis ablegen
-    fmt_in  : 'string',  originale Bildformat
-    fmt_out : 'string',  erwartete Bildformat
-  '''
-  import glob,os
-  from PIL import Image
-
+  
+  # Check if the input folder exist
   if os.path.exists(src_path)==False:
     raise FileNotFoundError( 'No such file or directory:'+ src_path)
   
-  img_dict=dict()
-  directorys=[ subpath for subpath in os.listdir(src_path) if   os.path.isdir( os.path.join(src_path,subpath) )   ]
-  #################################################
+  # Create a dictionary of input folder
+  img_dict = dict()
+  directorys = [ subpath for subpath in os.listdir(src_path) if   os.path.isdir( os.path.join(src_path,subpath) )   ]
+
+  # Reading the names and format of input images
   if len(directorys)==0:
     imgPaths=glob.glob(os.path.join(src_path,'*.'+ fmt_in))
+    
+    # If output folder is not exist, create such folder
     if os.path.exists(tar_path)==False:
       os.makedirs(tar_path)
+    
+    # Separate the names and the format of images, store the names
     for imgPath in imgPaths:
       im=Image.open(imgPath)
-      _,imgNamePPM=os.path.split(imgPath)
-      imgName,PPM=os.path.splitext(imgNamePPM)
+      _,imgNamePNG=os.path.split(imgPath)
+      imgName,PNG=os.path.splitext(imgNamePNG)
       im.save(os.path.join(tar_path,imgName+'.'+ fmt_out))
     return
 
-
-  #################################################
+  # Check the subfolders of input folder in the dictionary
   for subdir in directorys:
     img_dict[subdir]=glob.glob(os.path.join(src_path,subdir,'*.'+ fmt_in))
   
+  # If the subfolders is not exist in output folder, create such subfolders
   if os.path.exists(tar_path)==False:
     os.makedirs(tar_path)
-  # erstelle Ordner
+  
+  # Save the names and changed format into output folder
   for subdir,imgPaths in img_dict.items():
     newLongdir=os.path.join(tar_path,subdir)
+    
+    # Check if the output folder exist
     if os.path.exists(newLongdir)==False:
       os.makedirs(newLongdir)
+    
+    # Save the names of images with the wanted format
     for imgPath in imgPaths:
       im=Image.open(imgPath)
-      _,imgNamePPM=os.path.split(imgPath)
-      imgName,PPM=os.path.splitext(imgNamePPM)
+      _,imgNamePNG=os.path.split(imgPath)
+      imgName,PNG=os.path.splitext(imgNamePNG)
       im.save(os.path.join(tar_path,subdir,imgName+'.'+ fmt_out))
 
+
+
 # convert tiff into png 
-## define the files
-TIFF_IMAGE_ORDNER=r'Data_Process/8bit_tiff_file'
-PNG_IMAGE_ORDNER=r'Data_Process/png_file'
-
-
-
-
-# check the existance of the files if necessary
-#assert os.path.exists(TIFF_IMAGE_ORDNER), "Der Pfad existriert nicht."
-
-change_image_format_batch(TIFF_IMAGE_ORDNER,PNG_IMAGE_ORDNER,'tif','png')
+change_image_format_batch(TIFF_IMAGE_FILE,PNG_IMAGE_FILE,'tif','png')
