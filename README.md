@@ -40,9 +40,9 @@ move the labels in folder "Label" to the repository folder "Microtubules_Detecti
 
 4. Run the script Divide_Data_for_Training_and_Testing.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/"
 
-5. Run the Augmentation.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/".
+5. Run the script Augmentation.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/".
 
-6. Run the Neural_Network_Training.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/".
+6. Run the script Neural_Network_Training.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/".
 
 #########################################################################
 
