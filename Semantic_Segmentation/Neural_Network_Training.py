@@ -165,10 +165,10 @@ def load_and_padding_images(image_file_directory, channel):
 
 
 # Capture training augmented images as a list
-train_val_images = load_and_padding_images("Semantic_Segmentation/training_data/images",3)
+train_val_images = load_and_padding_images("Semantic_Segmentation/training_data/images_aug",3)
 
 # Capture training augmented labels as a list
-train_val_labels = load_and_padding_images("Semantic_Segmentation/training_data/labels",1)
+train_val_labels = load_and_padding_images("Semantic_Segmentation/training_data/labels_aug",1)
 
 # Load test set images as a list
 test_images = load_and_padding_images("Semantic_Segmentation/training_data/image_test",3)
