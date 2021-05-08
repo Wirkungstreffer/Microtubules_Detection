@@ -17,7 +17,7 @@ from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate,
 from keras.utils import normalize
 from keras.utils import plot_model
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
+
 
 # If cv2.imshow() function dosen't work, use the followed line of code
 os.environ['DISPLAY'] = ':1'
@@ -25,10 +25,99 @@ os.environ['DISPLAY'] = ':1'
 # Check if GPU is being used
 tf.test.gpu_device_name()
 
+#### The functions of this script is to train the convolutional neural network ####
+#### The input data is the two files "/training_data/images_aug/" and "/training_data/labels_aug/" #### 
+#### Outputs are plot of hole neural network, trained model, validataion accuary and loss polts and logs for tenserboard if needed ####
 
 # Functions Define
-
 #########################################################################################################################
+
+##### Define a simple Unet (Useful in image size of (256,256)), for further design customed neural network structure(Not implement here) #####
+def simple_unet_model(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS):
+
+# Build the model, set the input as the image height, width and color channels
+    inputs = tf.keras.layers.Input((IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS))
+
+    # Normalization of input data
+    #s = Lambda(lambda x: x / 255)(inputs) 
+
+    s = inputs
+
+    # Encoder definition
+    c1 = Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(s)
+    c1 = Dropout(0.1)(c1)
+    c1 = Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c1)
+    p1 = MaxPooling2D((2, 2))(c1)
+    
+    c2 = Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(p1)
+    c2 = Dropout(0.1)(c2)
+    c2 = Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c2)
+    p2 = MaxPooling2D((2, 2))(c2)
+     
+    c3 = Conv2D(256, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(p2)
+    c3 = Dropout(0.2)(c3)
+    c3 = Conv2D(256, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c3)
+    p3 = MaxPooling2D((2, 2))(c3)
+     
+    c4 = Conv2D(512, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(p3)
+    c4 = Dropout(0.2)(c4)
+    c4 = Conv2D(512, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c4)
+    p4 = MaxPooling2D(pool_size=(2, 2))(c4)
+     
+    c5 = Conv2D(1024, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(p4)
+    c5 = Dropout(0.3)(c5)
+    c5 = Conv2D(1024, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c5)
+    
+    # Decoder definition 
+    u6 = Conv2DTranspose(512, (2, 2), strides=(2, 2), padding='same')(c5)
+    u6 = concatenate([u6, c4])
+    c6 = Conv2D(512, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(u6)
+    c6 = Dropout(0.2)(c6)
+    c6 = Conv2D(512, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c6)
+     
+    u7 = Conv2DTranspose(256, (2, 2), strides=(2, 2), padding='same')(c6)
+    u7 = concatenate([u7, c3])
+    c7 = Conv2D(256, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(u7)
+    c7 = Dropout(0.2)(c7)
+    c7 = Conv2D(256, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c7)
+     
+    u8 = Conv2DTranspose(128, (2, 2), strides=(2, 2), padding='same')(c7)
+    u8 = concatenate([u8, c2])
+    c8 = Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(u8)
+    c8 = Dropout(0.1)(c8)
+    c8 = Conv2D(128, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c8)
+     
+    u9 = Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(c8)
+    u9 = concatenate([u9, c1], axis=3)
+    c9 = Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(u9)
+    c9 = Dropout(0.1)(c9)
+    c9 = Conv2D(64, (3, 3), activation='relu', kernel_initializer='he_normal', padding='same')(c9)
+     
+    outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
+     
+    model = tf.keras.Model(inputs=[inputs], outputs=[outputs])
+
+    # Setting up optimizer, loss function and metrics
+    #opt = tf.keras.optimizers.SGD(learning_rate=0.1)
+
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['auccuracy'])
+
+    #model.compile(optimizer='adam', loss=sm.losses.bce_jaccard_loss, metrics=[sm.metrics.iou_score])
+    
+    model.summary()
+    
+    return model
+
+
+# Load the model
+def get_model():
+    return simple_unet_model(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS)
+
+#model = get_model()
+
+
+
+##### Date import and process #####
 
 # Define a images loading and padding function, with the input loading data 1200x1200 png images and output 1216x1216 png images
 def load_and_padding_images(image_file_directory, channel):
@@ -73,7 +162,6 @@ def load_and_padding_images(image_file_directory, channel):
 
 
 # Loading data
-
 #########################################################################################################################
 
 
@@ -105,6 +193,7 @@ x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_st
 # Normalize the label images to make sure it is [0,1] binary images
 y_train = tf.keras.utils.normalize(y_train)
 y_val = tf.keras.utils.normalize(y_val)
+test_labels = tf.keras.utils.normalize(test_labels)
 
 # Sanity check, view the quantities of data sets and visualize few images
 imgsize1 = x_train.shape
@@ -133,7 +222,6 @@ cv2.waitKey(3000)
 
 
 # Define and set up training model
-
 #########################################################################################################################
 
 # Model von Segmentation_Models
@@ -164,7 +252,6 @@ tf.keras.utils.plot_model(model,to_file=os.path.join(log_dir,'model.png'),show_s
 
 
 # Start Training
-
 #########################################################################################################################
 
 # Training Setting
@@ -193,7 +280,6 @@ model.save('./Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5')
 
 
 # Evaluate the model
-
 #########################################################################################################################
 
 # Evalutae the model by test set
