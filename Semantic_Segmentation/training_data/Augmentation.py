@@ -10,6 +10,12 @@ from skimage import io, img_as_ubyte
 from scipy.ndimage import rotate
 import albumentations as A
 
+#### !!!! The script Divide_Data_for_Training_and_Testing.py must be run before runing this script !!!! ##### 
+
+#### The functions of this script is to generate augmented images ####
+#### The input data is the two files "/training_data/images/" and "/training_data/labels/" #### 
+#### Output data will automatically store in "training_data/image_aug/" and "training_data/label_aug/" ####
+
 # Define a images loading function
 def load_images(image_file_directory):
     # Create a image list
