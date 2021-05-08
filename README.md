@@ -46,4 +46,13 @@ move the labels in folder "label" to the repository folder "Microtubules_Detecti
 
 #########################################################################
 
+To implement into new sequence after model is trained:
+
+1. Put frames into folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/input_image", and seeds image into folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/seed_image".
+
+2. Run Implementation_Prediction.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
+
+3. Run Length_Measurement.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
+#########################################################################
+
 To transfer json file to image data, use console cd to the file, run $sh json_to_dataset.sh
