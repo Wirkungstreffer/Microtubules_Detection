@@ -33,7 +33,7 @@ def remove_inessential_files():
 remove_inessential_files()
 
 
-# Define a images loading function
+# Define a images path and name reading function
 def delete_end_str(path):
 
   # Check if the input folder exist
