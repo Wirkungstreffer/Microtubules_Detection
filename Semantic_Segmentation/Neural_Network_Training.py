@@ -27,7 +27,7 @@ tf.test.gpu_device_name()
 
 #### The functions of this script is to train the convolutional neural network ####
 #### The input data is the two files "/training_data/images_aug/" and "/training_data/labels_aug/" #### 
-#### Outputs are plot of hole neural network, trained model, validataion accuary and loss polts and logs for tenserboard if needed ####
+#### Outputs are plot of the hole neural network, trained model, validataion accuary and loss polts and logs for tenserboard if needed ####
 
 # Functions Define
 #########################################################################################################################
