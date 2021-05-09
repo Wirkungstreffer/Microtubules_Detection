@@ -7,6 +7,8 @@ import numpy as np
 
 #### The functions of this script is to split training and testing dataset ####
 #### Total dataset has 26 sequence, each sequence has 12 images, this scrpit will randomly choose "seq" numbers of sequcences into testing dataset ####
+#### The input data is the two files "/training_data/images/" and "/training_data/labels/" #### 
+#### Output data will automatically store in "training_data/image_test/" and "training_data/label_test/" ####
 #### The images names of training dataset and testing dataset will be stored into "training_data.txt" and "testing_data.txt" respectively ####
 
 # Define a images loading function
@@ -101,7 +103,7 @@ def move_sequence_into_testset(seq_number):
     sel_group_image = images_sequence[num]
     sel_group_label = labels_sequence[num]
 
-    # Move the seleted images and labels in to test set folder
+    # Move the seleted images and labels sequence in to test set folder
     while i < len(sel_group_image):
       shutil.move((images_sequence[num][i]+'.png'), image_test_path)
       shutil.move((labels_sequence[num][i]+'.png'), label_test_path)
