@@ -4,6 +4,10 @@ import pandas as pd
 import glob,os
 from PIL import Image
 
+#### This function is for read 8-bit tiff images and convert to png images ####
+#### The input is images in folder "Data_Process/8bit_img_file" ####
+#### Output will be store in folder "Data_Process/png_file" ####
+
 # Define the input tiff images folder and output png images folder
 TIFF_IMAGE_FILE=r'Data_Process/8bit_tiff_file'
 PNG_IMAGE_FILE=r'Data_Process/png_file'

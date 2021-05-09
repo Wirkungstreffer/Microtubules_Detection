@@ -2,8 +2,9 @@ import os
 import cv2
 
 
-# This function is for read 16-bit images and normalize further save them to 8-bit images 
-
+#### This function is for read 16-bit images and normalize further save them to 8-bit images ####
+#### The input is images in folder "Data_Process/16bit_img_file" ####
+#### Output will be store in folder "Data_Process/8bit_img_file" ####
 
 def read_directory(directory):
     # Define a image list, for further visualization
