@@ -296,8 +296,8 @@ plt.title('Training and validation loss')
 plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.legend()
-plt.show()
 plt.savefig("Semantic_Segmentation/loss.png")
+plt.show()
 
 # Plot the training and validation score at each epoch
 acc = history.history['iou_score']
@@ -309,9 +309,8 @@ plt.title('Training and validation iou score')
 plt.xlabel('Epochs')
 plt.ylabel('IOU score')
 plt.legend()
-plt.show()
 plt.savefig("Semantic_Segmentation/iou_score.png")
-
+plt.show()
 
 #########################################################################################################################
 # Threshold adjustment for better result if needed
