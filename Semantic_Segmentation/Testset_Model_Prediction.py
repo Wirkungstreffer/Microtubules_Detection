@@ -116,6 +116,6 @@ for n in range(0, len(test_outputs)):
     test_prediction = test_outputs[n]
 
     # Change the names of prediction for recognition and further easy to load
-    prediction_save_path = "%s/predict_%s.png"% (predict_file, test_name_list[n])
+    prediction_save_path = "%s/%s_prediction.png"% (predict_file, test_name_list[n])
     io.imsave(prediction_save_path, test_prediction)
 
