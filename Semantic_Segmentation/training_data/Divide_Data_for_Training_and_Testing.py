@@ -26,6 +26,8 @@ def remove_inessential_files():
     os.remove("Semantic_Segmentation/training_data/labels_aug/Augmented Labels.txt")
   if os.path.exists("Semantic_Segmentation/training_data/label_test/Label Testset.txt"):
     os.remove("Semantic_Segmentation/training_data/label_test/Label Testset.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/test_predict_output/Predicted Testset.txt"):
+    os.remove("Semantic_Segmentation/training_data/test_predict_output/Predicted Testset.txt")
 
 # Clear the redundant txt files
 remove_inessential_files()
