@@ -11,6 +11,26 @@ import numpy as np
 #### Output data will automatically store in "training_data/image_test/" and "training_data/label_test/" ####
 #### The images names of training dataset and testing dataset will be stored into "training_data.txt" and "testing_data.txt" respectively ####
 
+
+# Github cannot creat blank folder, so some txt files was create to maintain the folder, clear them would be better
+def remove_inessential_files():
+  if os.path.exists("Semantic_Segmentation/training_data/images/Training Images.txt"):
+    os.remove("Semantic_Segmentation/training_data/images/Training Images.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/images_aug/Augmented Images.txt"):
+    os.remove("Semantic_Segmentation/training_data/images_aug/Augmented Images.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/image_test/Test Image.txt"):
+    os.remove("Semantic_Segmentation/training_data/image_test/Test Image.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/labels/Training Labels.txt"):
+    os.remove("Semantic_Segmentation/training_data/labels/Training Labels.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/labels_aug/Augmented Labels.txt"):
+    os.remove("Semantic_Segmentation/training_data/labels_aug/Augmented Labels.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/label_test/Label Testset.txt"):
+    os.remove("Semantic_Segmentation/training_data/label_test/Label Testset.txt")
+
+# Clear the redundant txt files
+remove_inessential_files()
+
+
 # Define a images loading function
 def delete_end_str(path):
 
