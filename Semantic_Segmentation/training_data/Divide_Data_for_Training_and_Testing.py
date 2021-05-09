@@ -96,7 +96,7 @@ for img in range(0,len(list_read_image),image_quantity_each_sequence):
 # Create label sequence list
 labels_sequence = []
 
-# Read each 12 label, save them as sublist of label sequence list
+# Read each 12 labels, save them as sublist of label sequence list
 for lab in range(0,len(list_read_label),image_quantity_each_sequence):
   label_group = list_read_label[lab:lab+image_quantity_each_sequence]
   labels_sequence.append(label_group)
