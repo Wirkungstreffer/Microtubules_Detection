@@ -1,106 +1,163 @@
 import glob
 import cv2
-from cv2 import drawContours
 import os
-import datetime
-import pydot
-os.environ['DISPLAY'] = ':1'
 import numpy as np
-from matplotlib import pyplot as plt
 from PIL import Image
-from scipy.spatial import distance as dist
-from imutils import perspective
-from imutils import contours
-import argparse
-import imutils
-from scipy import interpolate
-import skimage
-import skimage.morphology
-import pwlf
+from skimage import io
 
-import segmentation_models as sm
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras import layers,models
-from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
-from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Conv2DTranspose, BatchNormalization, Dropout, Lambda
-from keras.utils import normalize
-from keras.utils import plot_model
-from keras.models import Sequential, Model
-from keras.applications.vgg16 import VGG16
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.linear_model import LinearRegression
-from skimage import data_dir,io,transform,color
 
-# Save predictions of seeds images
-seeds_images = []
-seeds_outputs = []
 
+
+# Define a images path and name reading function
+def delete_end_str(path):
+
+  # Check if the input folder exist
+  if os.path.exists(path)==False:
+    raise FileNotFoundError( 'No such file or directory:'+ path)
+  
+  # Create image path list and image name list
+  list_img_name = []
+  list_read_img = []
+  
+  # Start reading image path and name
+  filelist = os.listdir(path)
+  for filename in filelist:
+    filename = path + filename
+    
+    # Add image name to list
+    list_img_name.append(filename)
+    
+    # Make sure the names is in order
+    list_img_name.sort()
+
+    # Get the image path
+    new_file_name = filename.split(".png")[0]
+    
+    # Add image path to list
+    list_read_img.append(new_file_name)
+    
+    # Make sure the path is in order
+    list_read_img.sort()
+  
+  return list_img_name, list_read_img
+
+
+# Define a prediction process, with the input loading data are implementation images and outputs are segmentation predictions
+def load_and_predic(implementation_input_file, trained_model):
+
+    # Load the trained model
+    implementation_model = trained_model
+
+    # Creat implementation images list
+    implementation_inputs = []
+
+    # Creat prediction of implementation images list
+    implementation_outputs = []
+
+    for directory_path in glob.glob(implementation_input_file):
+
+        # Check if the implementation folder exist
+        if os.path.exists(implementation_input_file)==False:
+            raise FileNotFoundError( 'No such file or directory:'+ implementation_input_file)
+
+        # Reading the images in the folder
+        implementation_img_path = glob.glob(os.path.join(directory_path, '*.png'))
+
+        # Make sure reading sequence of the images is correctly according to the name sequence of images
+        implementation_img_path.sort()
+        for s in implementation_img_path:
+            
+            # Read the images as RGB mode
+            implementation_img = cv2.imread(s, cv2.IMREAD_COLOR)
+
+            # Use reflect padding the images into size 1216x1216
+            implementation_reflect_img = cv2.copyMakeBorder(implementation_img,8,8,8,8,cv2.BORDER_REFLECT)       
+            
+            # Add up into implementation images list 
+            implementation_inputs.append(implementation_reflect_img)
+            
+            # Convert list to array for machine learning processing
+            implementation_reflect_img = np.array(implementation_reflect_img)
+
+            # Expand the dimension of images for machine learning processing
+            implementation_reflect_img = np.expand_dims(implementation_reflect_img, axis=0)
+
+            # Use the trained model to predict segmentations
+            implementation_prediction = implementation_model.predict(implementation_reflect_img)
+
+            # Reshape the array into image
+            implementation_prediction_image = implementation_prediction.reshape(1216,1216)
+
+            # Crop the output image into the original size
+            implementation_prediction_image_cropped = implementation_prediction_image[8:1208, 8:1208]
+
+            # Add up into prediction list
+            implementation_outputs.append(implementation_prediction_image_cropped)
+    
+    return implementation_inputs, implementation_outputs
+
+
+
+# Set the seeds images and predictions saving path
 seed_image_file = "Semantic_Segmentation/implementation/seed_image/"
 predict_seed_file = "Semantic_Segmentation/implementation/prediction_seed"
 
-seed_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation_backup.h5", compile=False)
+# Load the trained model
+seed_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5", compile=False)
 
-for directory_path in glob.glob(seed_image_file):
-    seed_img_path = glob.glob(os.path.join(directory_path, '*.png'))
-    seed_img_path.sort()
-    for r in seed_img_path:
-        seed_img = cv2.imread(r, cv2.IMREAD_COLOR)
-        seed_reflect_img = cv2.copyMakeBorder(seed_img,8,8,8,8,cv2.BORDER_REFLECT)       
-        seeds_images.append(seed_reflect_img)
-        seed_reflect_img = np.array(seed_reflect_img)
-        seed_reflect_img = np.expand_dims(seed_reflect_img, axis=0)
-        seed_prediction = seed_model.predict(seed_reflect_img)
-        seed_prediction_image = seed_prediction.reshape(1216, 1216)
-        seeds_outputs.append(seed_prediction_image)
+# Load seed image and use trained model to predict segmentations
+seed_images, seed_outputs = load_and_predic(seed_image_file, seed_model)
+
+# Get the seeds images names
+seed_img_name, seed_read_path = delete_end_str(seed_image_file)
+
+# Create a name list
+seed_name_list = []
+
+# Save the seeds image names into name list
+for seed_file_name in seed_read_path:
+  seed_file_name = seed_file_name.strip("Semantic_Segmentation/implementation/seed_image/")
+  seed_name_list.append(seed_file_name)
+
+# Save the predictions into the seeds_output folder
+for n in range(0, len(seed_outputs)):
+  seed_prediction = seed_outputs[n]
+
+  # Change the names of prediction for recognition and further easy to load
+  seeds_prediction_save_path = "%s/%s_prediction.png"% (predict_seed_file, seed_name_list[n])
+  io.imsave(seeds_prediction_save_path, seed_prediction)
 
 
-for q in range(0, len(seeds_outputs)):
-    seeds_outputs_prediction = seeds_outputs[q]
-
-    seeds_outputs_save_path = "%s/seed_predict_%s.png"% (predict_seed_file, q)
-    io.imsave(seeds_outputs_save_path, seeds_outputs_prediction)
 
 
 
-
-# Get predictions of implementation images as a list
-implementation_input = []
-implementation_predict_outputs = []
-
+# Set the implementation images and predictions saving path
 implementation_input_file = "Semantic_Segmentation/implementation/input_image/"
 implementation_predict_file = "Semantic_Segmentation/implementation/prediction_image/"
 
-input_imgName_List = []
+# Load the trained model
+implementation_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5", compile=False)
 
-implementation_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation_backup.h5", compile=False)
-# Save predictions of implementation images as a list
-for directory_path in glob.glob(implementation_input_file):
-    implementation_img_path = glob.glob(os.path.join(directory_path, '*.png'))
-    implementation_img_path.sort()
-    for s in implementation_img_path:
-        implementation_img = cv2.imread(s, cv2.IMREAD_COLOR)
-        implementation_reflect_img = cv2.copyMakeBorder(implementation_img,8,8,8,8,cv2.BORDER_REFLECT)       
-        implementation_input.append(implementation_reflect_img) #save input images as a list
-        
-        implementation_reflect_img = np.array(implementation_reflect_img)
-        implementation_reflect_img = np.expand_dims(implementation_reflect_img, axis=0)
-        implementation_prediction = implementation_model.predict(implementation_reflect_img)
-        implementation_prediction_image = implementation_prediction.reshape(1216,1216)
-        implementation_predict_outputs.append(implementation_prediction_image)
+# Load implementation image and use trained model to predict segmentations
+implementation_inputs, implementation_outputs = load_and_predic(implementation_input_file, implementation_model)
 
-        input_im=Image.open(s)
-        _,input_imgNamePNG=os.path.split(s)
-        input_imgName,PNG=os.path.splitext(input_imgNamePNG)
-        input_imgName_List.append(input_imgName)
+# Get the implementation images names
+implementation_img_name, implementation_read_path = delete_end_str(implementation_input_file)
 
-print(input_imgName_List)
+# Create a name list
+implementation_name_list = []
 
-for t in range(0, len(implementation_predict_outputs)):
-    implementation_input_prediction = implementation_predict_outputs[t]
+# Save the testing names into name list
+for implementation_file_name in implementation_read_path:
+  implementation_file_name = implementation_file_name.strip("Semantic_Segmentation/implementation/input_image/")
+  implementation_name_list.append(implementation_file_name)
 
-    input_prediction_save_path = "%s/input_predict_%s.png"% (implementation_predict_file, t)
-    io.imsave(input_prediction_save_path, implementation_input_prediction)
+# Save the predictions into the implementation_output folder
+for n in range(0, len(implementation_outputs)):
+  implementation_prediction = implementation_outputs[n]
+
+  # Change the names of prediction for recognition and further easy to load
+  implementation_prediction_save_path = "%s/%s_prediction.png"% (implementation_predict_file, implementation_name_list[n])
+  io.imsave(implementation_prediction_save_path, implementation_prediction)
