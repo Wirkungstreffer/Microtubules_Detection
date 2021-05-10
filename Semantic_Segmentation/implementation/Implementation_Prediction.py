@@ -9,6 +9,12 @@ import tensorflow as tf
 from tensorflow import keras
 
 
+#### This script will get the predictions of input images ####
+#### The inputs frame images of microtubules should be put in the folder "input_image" ####
+#### The seed image should be put in the folder "seed_image" ####
+#### Outputs of frame images predictions will be stored in folder "prediction_image" ####
+#### Outputs of seed image predictions will be stored in folder "prediction_seed" #### 
+
 # Github cannot creat blank folder, so some txt files was create to maintain the folder, clear them would be better
 def remove_inessential_files():
   if os.path.exists("Semantic_Segmentation/implementation/input_image/input_image.txt"):
