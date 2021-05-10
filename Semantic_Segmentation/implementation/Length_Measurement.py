@@ -51,6 +51,8 @@ def load_images(image_file_directory,channel):
 def midpoint(ptA, ptB):
     return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
+
+
 # Set the images and predictions paths
 images_path = "Semantic_Segmentation/implementation/input_image/"
 predict_image_path = "Semantic_Segmentation/implementation/prediction_image/"
