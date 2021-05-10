@@ -131,8 +131,6 @@ for n in range(0, len(seed_outputs)):
 
 
 
-
-
 # Set the implementation images and predictions saving path
 implementation_input_file = "Semantic_Segmentation/implementation/input_image/"
 implementation_predict_file = "Semantic_Segmentation/implementation/prediction_image/"
