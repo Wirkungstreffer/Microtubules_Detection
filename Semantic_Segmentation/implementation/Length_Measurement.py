@@ -2,19 +2,16 @@ import glob
 import cv2
 from cv2 import drawContours
 import os
-os.environ['DISPLAY'] = ':1'
 import numpy as np
 from matplotlib import pyplot as plt
-from PIL import Image
 from scipy.spatial import distance as dist
 from imutils import perspective
 from imutils import contours
-import argparse
 import imutils
 import skimage
-import pwlf
 
-
+# If cv2.imshow() function dosen't work, use the followed line of code
+os.environ['DISPLAY'] = ':1'
 
 
 # Define a images loading function
@@ -187,9 +184,9 @@ for image in array_of_predict_input_image:
     ax[1].set_title('prediction and measurment')
     ax[1].axis('off')
 
-    plt.show()
+    #plt.show()
 
     input_count = input_count + 1
 
-    #cv2.imshow("Prediction + Measurement", input_img)
-    #cv2.waitKey(0)
+    cv2.imshow("Prediction + Measurement", input_img)
+    cv2.waitKey(0)
