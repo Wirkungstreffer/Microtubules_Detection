@@ -64,7 +64,7 @@ def delete_end_str(path):
 
 
 # Define a prediction process, with the input loading data are implementation images and outputs are segmentation predictions
-def load_and_predic(implementation_input_file, trained_model):
+def load_and_predict(implementation_input_file, trained_model):
 
     # Load the trained model
     implementation_model = trained_model
@@ -127,7 +127,7 @@ predict_seed_file = "Semantic_Segmentation/implementation/prediction_seed"
 seed_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5", compile=False)
 
 # Load seed image and use trained model to predict segmentations
-seed_images, seed_outputs = load_and_predic(seed_image_file, seed_model)
+seed_images, seed_outputs = load_and_predict(seed_image_file, seed_model)
 
 # Get the seeds images names
 seed_img_name, seed_read_path = delete_end_str(seed_image_file)
@@ -158,7 +158,7 @@ implementation_predict_file = "Semantic_Segmentation/implementation/prediction_i
 implementation_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5", compile=False)
 
 # Load implementation image and use trained model to predict segmentations
-implementation_inputs, implementation_outputs = load_and_predic(implementation_input_file, implementation_model)
+implementation_inputs, implementation_outputs = load_and_predict(implementation_input_file, implementation_model)
 
 # Get the implementation images names
 implementation_img_name, implementation_read_path = delete_end_str(implementation_input_file)
