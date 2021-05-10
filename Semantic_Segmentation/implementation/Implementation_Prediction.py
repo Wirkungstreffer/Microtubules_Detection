@@ -9,6 +9,19 @@ import tensorflow as tf
 from tensorflow import keras
 
 
+# Github cannot creat blank folder, so some txt files was create to maintain the folder, clear them would be better
+def remove_inessential_files():
+  if os.path.exists("Semantic_Segmentation/implementation/input_image/input_image.txt"):
+    os.remove("Semantic_Segmentation/implementation/input_image/input_image.txt")
+  if os.path.exists("Semantic_Segmentation/implementation/prediction_image/prediction_image.txt"):
+    os.remove("Semantic_Segmentation/implementation/prediction_image/prediction_image.txt")
+  if os.path.exists("Semantic_Segmentation/implementation/prediction_seed/prediction_seed.txt"):
+    os.remove("Semantic_Segmentation/implementation/prediction_seed/prediction_seed.txt")
+  if os.path.exists("Semantic_Segmentation/implementation/seed_image/seed_image.txt"):
+    os.remove("Semantic_Segmentation/implementation/seed_image/seed_image.txt")
+
+# Clear the redundant txt files
+remove_inessential_files()
 
 # Define a images path and name reading function
 def delete_end_str(path):
