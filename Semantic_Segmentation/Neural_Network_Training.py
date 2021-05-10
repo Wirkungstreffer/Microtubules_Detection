@@ -13,7 +13,6 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers,models
 from tensorflow.keras.callbacks import TensorBoard
-from keras.layers import Input, Conv2D, MaxPooling2D, UpSampling2D, concatenate, Conv2DTranspose, BatchNormalization, Dropout, Lambda
 from keras.utils import normalize
 from keras.utils import plot_model
 from sklearn.model_selection import train_test_split
