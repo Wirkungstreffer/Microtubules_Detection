@@ -58,7 +58,7 @@ def midpoint(ptA, ptB):
 images_path = "Semantic_Segmentation/implementation/input_image/"
 predict_image_path = "Semantic_Segmentation/implementation/prediction_image/"
 
-# Load predicted images
+# Load original images and predicted images
 array_of_input_image = load_images(images_path, 3)
 array_of_predict_input_image = load_images(predict_image_path, 1)
 
