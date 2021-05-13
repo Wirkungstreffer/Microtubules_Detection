@@ -105,7 +105,7 @@ for lab in range(0,len(list_read_label),image_quantity_each_sequence):
 
 
 # Set the sequence number of test set images
-seq = 2 
+seq = 5 
 
 # Creat a number list
 seq_number = []
