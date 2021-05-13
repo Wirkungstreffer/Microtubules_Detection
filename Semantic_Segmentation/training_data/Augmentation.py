@@ -40,8 +40,8 @@ def load_images(image_file_directory):
 
 
 # Set the to be generated augmented image number
-images_to_generate = 12
-test_images_to_generate = 3
+images_to_generate = 1200
+test_images_to_generate = 300
 
 # Set the original images and labels folder path
 images_path = "Semantic_Segmentation/training_data/images/" 
