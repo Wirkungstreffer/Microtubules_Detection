@@ -26,8 +26,10 @@ def remove_inessential_files():
     os.remove("Semantic_Segmentation/training_data/labels_aug/Augmented Labels.txt")
   if os.path.exists("Semantic_Segmentation/training_data/label_test/Label Testset.txt"):
     os.remove("Semantic_Segmentation/training_data/label_test/Label Testset.txt")
-  if os.path.exists("Semantic_Segmentation/training_data/test_predict_output/Predicted Testset.txt"):
-    os.remove("Semantic_Segmentation/training_data/test_predict_output/Predicted Testset.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/test_images_aug/test_images_aug.txt"):
+    os.remove("Semantic_Segmentation/training_data/test_images_aug/test_images_aug.txt")
+  if os.path.exists("Semantic_Segmentation/training_data/test_labels_aug/test_labels_aug.txt"):
+    os.remove("Semantic_Segmentation/training_data/test_labels_aug/test_labels_aug.txt")
 
 # Clear the redundant txt files
 remove_inessential_files()
@@ -103,7 +105,7 @@ for lab in range(0,len(list_read_label),image_quantity_each_sequence):
 
 
 # Set the sequence number of test set images
-seq = 3 
+seq = 2 
 
 # Creat a number list
 seq_number = []
