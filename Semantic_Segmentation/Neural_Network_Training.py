@@ -79,60 +79,60 @@ def load_and_padding_images(image_file_directory, channel):
 
 
 # Capture training augmented images as a list
-train_val_images = load_and_padding_images("Semantic_Segmentation/training_data/images_aug",3)
+train_images = load_and_padding_images("Semantic_Segmentation/training_data/images_aug",3)
 
 # Capture training augmented labels as a list
-train_val_labels = load_and_padding_images("Semantic_Segmentation/training_data/labels_aug",1)
+train_labels = load_and_padding_images("Semantic_Segmentation/training_data/labels_aug",1)
 
 # Load test set images as a list
-test_images = load_and_padding_images("Semantic_Segmentation/training_data/image_test",3)
+test_images = load_and_padding_images("Semantic_Segmentation/training_data/test_images_aug",3)
 
 # Load test set labels as a list
-test_labels = load_and_padding_images("Semantic_Segmentation/training_data/label_test",1)
+test_labels = load_and_padding_images("Semantic_Segmentation/training_data/test_labels_aug",1)
 
 
 # Load customary x_train and y_train variables
-X = train_val_images
-Y = train_val_labels
+X = train_images
+Y = train_labels
+
+X_test = test_images
+Y_test = test_labels
 
 # Expand the dimension of label images for machine learning processing
 Y = np.expand_dims(Y, axis=3)
-test_labels = np.expand_dims(test_labels, axis=3) 
-
-# Splite data into training set and validation set
-from sklearn.model_selection import train_test_split
-x_train, x_val, y_train, y_val = train_test_split(X, Y, test_size=0.2, random_state=42)
+Y_test = np.expand_dims(Y_test, axis=3) 
 
 # Normalize the label images to make sure it is [0,1] binary images
-y_train = tf.keras.utils.normalize(y_train)
-y_val = tf.keras.utils.normalize(y_val)
-test_labels = tf.keras.utils.normalize(test_labels)
+Y = tf.keras.utils.normalize(Y)
+Y_test = tf.keras.utils.normalize(Y_test)
 
 # Sanity check, view the quantities of data sets and visualize few images
-imgsize1 = x_train.shape
+imgsize1 = X.shape
 print(imgsize1)
-imgsize2 = x_val.shape
+imgsize2 = Y.shape
 print(imgsize2)
-imgsize3 = y_train.shape
+imgsize3 = X_test.shape
 print(imgsize3)
-imgsize4 = y_val.shape
+imgsize4 = Y_test.shape
 print(imgsize4)
-imgsize5 = test_images.shape
-print(imgsize5)
-imgsize6 = test_labels.shape
-print(imgsize6)
 
-# Select random image in training and validation dataset to visualize
+# Select random image in training dataset to visualize
 import random
-image_number = random.randint(0, len(x_train)-1)
+image_number = random.randint(0, len(X)-1)
 
-cv2.imshow("x train",x_train[image_number])
+cv2.imshow("X train",X[image_number])
 cv2.waitKey(3000)
 
-cv2.imshow("y train",y_train[image_number])
+cv2.imshow("Y train",Y[image_number])
 cv2.waitKey(3000)
 
+test_image_number = random.randint(0, len(X_test)-1)
 
+cv2.imshow("X test",X_test[image_number])
+cv2.waitKey(3000)
+
+cv2.imshow("Y test",Y_test[image_number])
+cv2.waitKey(3000)
 
 # Define and set up training model
 #########################################################################################################################
@@ -176,14 +176,14 @@ checkpointer = tf.keras.callbacks.ModelCheckpoint('MT_1216_Semantic_Segmentation
 callbacks = [#tf.keras.callbacks.EarlyStopping(patience = 4,monitor='val_iou_score'), 
              tf.keras.callbacks.TensorBoard(log_dir = './Semantic_Segmentation/logs')]
 
-# Training input: 1200 images as training set and 300 images as validation set with image size 1216x1216 in RGB mode
+# Training input: 1500 augmented images as training set and 60 images as test set with image size 1216x1216
 # Tensor dimensions: 1216x1216x3 --- 608x608x64 --- 304x304x128 --- 152x152x256 --- 76x76x512 --- 38x38x1024 
-history = model.fit(x_train, y_train, 
+history = model.fit(X, Y, 
                     batch_size = 2, 
                     #verbose = 1, 
                     epochs = 60, 
                     callbacks=callbacks,
-                    validation_data=(x_val, y_val)
+                    validation_data=(X_test, Y_test)
                     #shuffle=False
                     )
 
@@ -193,10 +193,6 @@ model.save('./Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5')
 
 # Evaluate the model
 #########################################################################################################################
-
-# Evalutae the model by test set
-_, acc = model.evaluate(test_images, test_labels, batch_size = 1)
-print("Accuracy = ", (acc * 100.0), "%")
 
 # Plot the training and validation losses at each epoch
 loss = history.history['loss']
