@@ -450,3 +450,43 @@ file_csv = open('Semantic_Segmentation/implementation/Microtubules_Lengths.csv',
 writer_csv = csv.writer(file_csv)
 for concatenate_lengths_per_frame in Microtubules_Length_Concatenated_to_Seeds:
     writer_csv.writerow(concatenate_lengths_per_frame)
+
+
+
+# Use piecewise linear regression to generate the plot and velocity
+#########################################################################################################################
+
+
+# Select on microtubules to verify
+select_microtubules_number = 7
+
+Case_Microtubules = []
+for m in Microtubules_Length_Concatenated_to_Seeds:
+    Case_Microtubules.append(m[select_microtubules_number-1])
+
+# Scatter plot the length
+x = np.array([np.arange(0,len(Microtubules_Length_Concatenated_to_Seeds))])
+y = np.array([Case_Microtubules])
+
+plt.scatter(x, y)
+plt.show()
+
+# Transfer into array for further process
+x_l = np.array([np.arange(0,len(Microtubules_Length_Concatenated_to_Seeds))])
+y_l = Case_Microtubules
+
+# Use piecewise linear regression
+breakpoint_number = 3
+
+my_pwlf = pwlf.PiecewiseLinFit(x_l, y_l)
+breaks = my_pwlf.fit(breakpoint_number)
+print(breaks)
+
+x_hat = np.linspace(x.min(), x.max(), 100)
+y_hat = my_pwlf.predict(x_hat)
+
+plt.figure()
+plt.plot(x, y, 'o')
+plt.plot(x_hat, y_hat, '-')
+plt.savefig("Semantic_Segmentation/implementation/pwlf")
+plt.show()
