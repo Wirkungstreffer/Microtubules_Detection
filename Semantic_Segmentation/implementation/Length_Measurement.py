@@ -10,6 +10,7 @@ from imutils import contours
 import imutils
 import skimage
 import csv
+import pwlf
 
 # If cv2.imshow() function dosen't work, use the followed line of code
 os.environ['DISPLAY'] = ':1'
@@ -208,8 +209,6 @@ plt.savefig("Semantic_Segmentation/implementation/seed_measurement")
 #cv2.imshow("Prediction + Measurement", seed_predict_img)
 #cv2.waitKey(0)
 
-#for seeds_endpoint in seed_endpoints_list:
-#    print(seeds_endpoint)
 
 # Acquire microtubles position and calculate length information 
 #########################################################################################################################
@@ -335,41 +334,64 @@ for image in array_of_predict_input_image:
 
     dA_list = np.array(dA_list)
     dB_list = np.array(dB_list)
+
     
+    # The lengths of microtubules that detected and measured in video frames
     Length_Micotubulues.append(dB_list)
 
-
-
-    #correspond_mt = []
-
-    #for seed_endpoint in seed_endpoints_list:
-    #    seed_endpoint_1 = seed_endpoint[0]
-    #    seed_endpoint_2 = seed_endpoint[1]
+    
+    # The lengths of microtubules which concatenation with corresponding seed
+    for seed_endpoint in seed_endpoints_list:
         
-        #for mt in range(len(tlblX_list)):
-
-        #    distance_1 = dist.euclidean(seed_endpoint_1, (tlblX_list[mt], tlblY_list[mt]))
-        #    distance_2 = dist.euclidean(seed_endpoint_1, (trbrX_list[mt], trbrY_list[mt]))
-        #    distance_3 = dist.euclidean(seed_endpoint_2, (tlblX_list[mt], tlblY_list[mt]))
-        #    distance_4 = dist.euclidean(seed_endpoint_2, (trbrX_list[mt], trbrY_list[mt]))
-
-        #    if distance_1 < tolerance:
-        #        correspond_mt.append(mt)
-        #    elif distance_2 < tolerance:
-        #        correspond_mt.append(mt)
-        #    elif distance_3 < tolerance:
-        #        correspond_mt.append(mt)
-        #    elif distance_4 < tolerance:
-        #        correspond_mt.append(mt)
-        #    else:
-        #        correspond_mt.append(len(tlblX_list) + 200)    
+        # Store two endpoints of seeds
+        seed_endpoint_1 = seed_endpoint[0]
+        seed_endpoint_2 = seed_endpoint[1]
         
-        #if correspond_mt == len(tlblX_list) + 200 :
-        #    seed_correspond_microtubules_width.append(0)
-        #    seed_correspond_microtubules_length.append(0)
-        #else :
-        #    seed_correspond_microtubules_width.append(dA_list[correspond_mt])
-        #    seed_correspond_microtubules_length.append(dB_list[correspond_mt])
+        # Create lists for store the index of the microtubules corresponding to seeds
+        correspond_mt = []
+        correspond_mt_per_seed = []
+        min_index_list = []
+        min_val_list = []
+        
+        # Calculate the distance between each seeds and microtubules, save the microtubules have smaller distance than tolerance with seeds
+        for mt in range(len(tlblX_list)):
+            
+            # Caculate the distance between seeds endpoints and microtubules endpoints
+            distance_1 = dist.euclidean(seed_endpoint_1, (tlblX_list[mt], tlblY_list[mt]))
+            distance_2 = dist.euclidean(seed_endpoint_1, (trbrX_list[mt], trbrY_list[mt]))
+            distance_3 = dist.euclidean(seed_endpoint_2, (tlblX_list[mt], tlblY_list[mt]))
+            distance_4 = dist.euclidean(seed_endpoint_2, (trbrX_list[mt], trbrY_list[mt]))
+
+            # Save the microtubules index has smaller than tolerance
+            if distance_1 < tolerance:
+                correspond_mt.append(mt) 
+            elif distance_2 < tolerance:
+                correspond_mt.append(mt) 
+            elif distance_3 < tolerance:
+                correspond_mt.append(mt) 
+            elif distance_4 < tolerance:
+                correspond_mt.append(mt) 
+            else:
+                correspond_mt.append(len(tlblX_list) + 200)
+
+        # Make the stored list into sublist according to each seed
+        for mt_number in range(0,len(correspond_mt),len(tlblX_list)):
+            number_group = correspond_mt[mt_number:mt_number+len(tlblX_list)]
+            correspond_mt_per_seed.append(number_group)
+
+        # Find the corresponding index for each seed
+        for the_index in correspond_mt_per_seed:
+            min_index_list.append(correspond_mt.index(min(the_index)))
+            min_val_list.append(min(the_index))
+        
+        # Save the corresponding length information to the seed_correspond_microtubules lists
+        for x in range(len(min_index_list)):
+            if min_val_list[x] == len(tlblX_list) + 200 :
+                seed_correspond_microtubules_width.append(0)
+                seed_correspond_microtubules_length.append(0)
+            else :
+                seed_correspond_microtubules_width.append(dA_list[min_index_list[x]])
+                seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])
 
 
 
@@ -399,16 +421,16 @@ for image in array_of_predict_input_image:
     #cv2.waitKey(0)
 
 
-print(len(Length_Micotubulues))
-print(Length_Micotubulues[0])
-
-#microtubules_length_all_frames = []
+microtubules_length_all_frames = []
 # Read the microtubules length for seeds in each frame, save them as sublist of label sequence list
-#for length in range(0,len(seed_correspond_microtubules_length),len(seed_endpoints_list)):
-#  length_group = seed_correspond_microtubules_length[length:length+len(seed_endpoints_list)]
-#  microtubules_length_all_frames.append(length_group)
+for length in range(0,len(seed_correspond_microtubules_length),len(seed_endpoints_list)):
+  length_group = seed_correspond_microtubules_length[length:length+len(seed_endpoints_list)]
+  microtubules_length_all_frames.append(length_group)
 
-file_csv = open('Semantic_Segmentation/implementation/Microtubules_Lengths.csv','w',newline='')
-writer_csv = csv.writer(file_csv)
-for lengths_per_frame in Length_Micotubulues:
-    writer_csv.writerow(lengths_per_frame)
+print(microtubules_length_all_frames[0])
+#file_csv = open('Semantic_Segmentation/implementation/Microtubules_Lengths.csv','w',newline='')
+#writer_csv = csv.writer(file_csv)
+#for lengths_per_frame in Length_Micotubulues:
+#    writer_csv.writerow(lengths_per_frame)
+
+
