@@ -8,7 +8,6 @@ from scipy.spatial import distance as dist
 from imutils import perspective
 from imutils import contours
 import imutils
-import skimage
 import csv
 import pwlf
 
