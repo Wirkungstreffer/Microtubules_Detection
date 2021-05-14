@@ -118,7 +118,10 @@ seed_trbrY_list = []
 seed_dA_list = []
 seed_dB_list = []
 
+
+# Create list for seeds endpoints
 seed_endpoints_list = []
+
 
 # for loop for all contour
 for seed_c in seed_cnts:
@@ -140,12 +143,16 @@ for seed_c in seed_cnts:
 
     # Get the midpoint of the length and width of the box
     (seed_tl, seed_tr, seed_br, seed_bl) = seed_box
+    
+    # Midpoints of the width sides of box
     (seed_tltrX, seed_tltrY) = midpoint(seed_tl, seed_tr)
     (seed_blbrX, seed_blbrY) = midpoint(seed_bl, seed_br)
 
+    # Midpoints of the length sides of box
     (seed_tlblX, seed_tlblY) = midpoint(seed_tl, seed_bl)
     (seed_trbrX, seed_trbrY) = midpoint(seed_tr, seed_br)
 
+    # Add the endpoints coordinates into list
     seed_endpoints_list.append([(seed_tlblX, seed_tlblY),(seed_trbrX, seed_trbrY)])
 
     # Add the points into the lists
@@ -180,7 +187,6 @@ seed_trbrY_list = np.array(seed_trbrY_list)
 
 seed_dA_list = np.array(seed_dA_list)
 seed_dB_list = np.array(seed_dB_list)
-#print(dA_list,dB_list)
 
 # Draw the length & width line and the number
 seed_predict_img = seed_image_noise_reduce.copy()
@@ -296,9 +302,12 @@ for image in array_of_predict_input_image:
 
         # Get the midpoint of the length and width of the box
         (tl, tr, br, bl) = box
+        
+        # Midpoints of the width sides of box
         (tltrX, tltrY) = midpoint(tl, tr)
         (blbrX, blbrY) = midpoint(bl, br)
-
+        
+        # Midpoints of the length sides of box
         (tlblX, tlblY) = midpoint(tl, bl)
         (trbrX, trbrY) = midpoint(tr, br)
 
@@ -421,16 +430,23 @@ for image in array_of_predict_input_image:
     #cv2.waitKey(0)
 
 
-microtubules_length_all_frames = []
-# Read the microtubules length for seeds in each frame, save them as sublist of label sequence list
+# Create a list to store the lengths information
+Microtubules_Length_Concatenated_to_Seeds = []
+Microtubules_Width_Concatenated_to_Seeds = []
+
+# Read the microtubules length concatanated to corresponding seeds in each frame, save them as sublist of label sequence list
 for length in range(0,len(seed_correspond_microtubules_length),len(seed_endpoints_list)):
   length_group = seed_correspond_microtubules_length[length:length+len(seed_endpoints_list)]
-  microtubules_length_all_frames.append(length_group)
+  Microtubules_Length_Concatenated_to_Seeds.append(length_group)
 
-print(microtubules_length_all_frames[0])
-#file_csv = open('Semantic_Segmentation/implementation/Microtubules_Lengths.csv','w',newline='')
-#writer_csv = csv.writer(file_csv)
-#for lengths_per_frame in Length_Micotubulues:
-#    writer_csv.writerow(lengths_per_frame)
+# Read the microtubules width concatanated to corresponding seeds in each frame, save them as sublist of label sequence list
+for width in range(0,len(seed_correspond_microtubules_width),len(seed_endpoints_list)):
+  width_group = seed_correspond_microtubules_width[width:width+len(seed_endpoints_list)]
+  Microtubules_Width_Concatenated_to_Seeds.append(width_group)
 
 
+# Store the information into csv file
+file_csv = open('Semantic_Segmentation/implementation/Microtubules_Lengths.csv','w',newline='')
+writer_csv = csv.writer(file_csv)
+for concatenate_lengths_per_frame in Microtubules_Length_Concatenated_to_Seeds:
+    writer_csv.writerow(concatenate_lengths_per_frame)
