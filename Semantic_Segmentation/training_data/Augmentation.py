@@ -1,8 +1,8 @@
 import numpy as np
 import glob
 import random
-import cv2
 import os
+import cv2
 
 from matplotlib import pyplot as plt
 from skimage.transform import AffineTransform, warp
@@ -40,8 +40,8 @@ def load_images(image_file_directory):
 
 
 # Set the to be generated augmented image number
-images_to_generate = 1200
-test_images_to_generate = 300
+images_to_generate = 1500
+#test_images_to_generate = 300
 
 # Set the original images and labels folder path
 images_path = "Semantic_Segmentation/training_data/images/" 
@@ -116,4 +116,4 @@ def generate_augmented_data(aug_images_to_generate, images, masks, save_image_pa
 generate_augmented_data(images_to_generate, images, masks, img_augmented_path, msk_augmented_path,"_train")
 
 # Generate augmented test set data
-generate_augmented_data(test_images_to_generate, test_images, test_masks, test_img_augmented_path, test_msk_augmented_path, "_test")
+#generate_augmented_data(test_images_to_generate, test_images, test_masks, test_img_augmented_path, test_msk_augmented_path, "_test")
