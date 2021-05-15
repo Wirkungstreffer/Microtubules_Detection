@@ -75,7 +75,7 @@ seed_dilataion = cv2.dilate(predict_seed_image[0], None, iterations=1)
 seed_erosion = cv2.erode(seed_dilataion, None, iterations=1)
 
 # Read the original image
-seed_original = predict_seed_image[0]
+seed_original = seed_image[0]
 
 # Convert prdiction image to binary map by thresholding
 seed_ret, seed_binary_map = cv2.threshold(seed_erosion,127,255,0)
@@ -128,9 +128,6 @@ for seed_c in seed_cnts:
     # if it's too small, it might be noise, just ignore it
     if cv2.contourArea(seed_c) < 20:
         continue
-
-    # Get the copy for later draw function
-    seed_orig = seed_original.copy()
 
     # Use minimal area rectangular to box the segmentation
     seed_box = cv2.minAreaRect(seed_c)
@@ -197,21 +194,6 @@ for i in range(len(seed_tltrX_list)):
 
 
 #cv2.imshow('seed',seed_predict_img)
-#cv2.waitKey(0)
-
-fig, ax = plt.subplots(ncols=2, figsize=(20, 8))
-ax[0].imshow(seed_original)
-ax[0].set_title('original seed image')
-ax[0].axis('off')
-
-ax[1].imshow(seed_predict_img)
-ax[1].set_title('seed prediction and measurment')
-ax[1].axis('off')
-
-plt.savefig("Semantic_Segmentation/implementation/seed_measurement")
-#plt.show()
-
-#cv2.imshow("Prediction + Measurement", seed_predict_img)
 #cv2.waitKey(0)
 
 
@@ -401,32 +383,30 @@ for image in array_of_predict_input_image:
                 seed_correspond_microtubules_width.append(dA_list[min_index_list[x]])
                 seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])
 
-
+    # Add seed image and microtubules image
+    add_img = cv2.add(seed_original,input_original)
 
     # Draw the length & width line and the number
-    predict_img = image_noise_reduce.copy()
+    orignal_composite = add_img.copy()
     for i in range(len(tltrX_list)):
-        cv2.line(predict_img, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
-        cv2.line(predict_img, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
-        cv2.putText(predict_img, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
-        cv2.putText(predict_img, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 255, 255), 2)
+        # Draw lines and informations of microtubules
+        cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
+        cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
+        cv2.putText(orignal_composite, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 255), 2)
+        cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
 
+    for j in range(len(seed_tltrX_list)):
+        # Draw lines and informations of microtubules
+        cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
+        cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
+        cv2.putText(orignal_composite, "{:.1f}".format(seed_dA_list[j]), (int(seed_tltrX_list[j] - 15), int(seed_tltrY_list[j] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2)
+        cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
 
-    #fig, ax = plt.subplots(ncols=2, figsize=(20, 8))
-    #ax[0].imshow(input_original)
-    #ax[0].set_title('original image')
-    #ax[0].axis('off')
-
-    #ax[1].imshow(predict_img)
-    #ax[1].set_title('prediction and measurment')
-    #ax[1].axis('off')
-
-    #plt.show()
 
     frame = frame + 1
 
-    #cv2.imshow("Prediction + Measurement", predict_img)
-    #cv2.waitKey(0)
+    cv2.imshow("Measurement Visualization", orignal_composite)
+    cv2.waitKey(0)
 
 
 # Create a list to store the lengths information
@@ -468,7 +448,7 @@ x = np.array([np.arange(0,len(Microtubules_Length_Concatenated_to_Seeds))])
 y = np.array([Case_Microtubules])
 
 plt.scatter(x, y)
-plt.show()
+#plt.show()
 
 # Transfer into array for further process
 x_l = np.array([np.arange(0,len(Microtubules_Length_Concatenated_to_Seeds))])
@@ -488,4 +468,4 @@ plt.figure()
 plt.plot(x, y, 'o')
 plt.plot(x_hat, y_hat, '-')
 plt.savefig("Semantic_Segmentation/implementation/pwlf")
-plt.show()
+#plt.show()
