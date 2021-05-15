@@ -74,8 +74,12 @@ images_path = "Semantic_Segmentation/training_data/images/"
 labels_path = "Semantic_Segmentation/training_data/labels/" 
 
 # Set the test set images and labels saving path
-image_test_path = "Semantic_Segmentation/training_data/image_test/" 
-label_test_path = "Semantic_Segmentation/training_data/label_test/" 
+image_test_path = "Semantic_Segmentation/training_data/image_test/"
+if os.path.exists(image_test_path)==False:
+  os.makedirs(image_test_path) 
+label_test_path = "Semantic_Segmentation/training_data/label_test/"
+if os.path.exists(label_test_path)==False:
+  os.makedirs(label_test_path) 
 
 # Load images and labels
 list_image_name, list_read_image = delete_end_str(images_path)
@@ -105,7 +109,7 @@ for lab in range(0,len(list_read_label),image_quantity_each_sequence):
 
 
 # Set the sequence number of test set images
-seq = 5 
+seq = 1 
 
 # Creat a number list
 seq_number = []
