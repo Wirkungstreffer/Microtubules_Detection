@@ -445,19 +445,17 @@ for concatenate_lengths_per_frame in Microtubules_Length_Concatenated_to_Seeds:
 # Generate vedio
 #########################################################################################################################
 
+# Vedio parameters setting
 fps = 3
 size = (1200,1200)
-#可以用(*'DVIX')或(*'X264'),如果都不行先装ffmepg: sudo apt-get install ffmepg
-
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-videoWriter = cv2.VideoWriter('Semantic_Segmentation/implementation/Microtubules_Lengths_Measurement.avi',fourcc,fps,size)#最后一个是保存图片的尺寸
+videoWriter = cv2.VideoWriter('Semantic_Segmentation/implementation/Microtubules_Lengths_Measurement.avi',fourcc,fps,size)
 
-#for(i=1;i<471;++i)
+# Start to generate vedio
 for visualize_measurement_frame in visualize_measurements_images_list:
     videoWriter.write(visualize_measurement_frame)
 
 videoWriter.release()
-
 
 
 # Use piecewise linear regression to generate the plot and velocity
