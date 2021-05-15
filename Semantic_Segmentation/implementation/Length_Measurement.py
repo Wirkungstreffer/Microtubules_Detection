@@ -219,6 +219,9 @@ tolerance = 10
 # Create list to store the number of length
 Length_Micotubulues = []
 
+# Visualize measurements images list
+visualize_measurements_images_list = []
+
 # Measure the lengths of microtubules segmentation
 for image in array_of_predict_input_image:
 
@@ -408,7 +411,9 @@ for image in array_of_predict_input_image:
         cv2.putText(orignal_composite, "{:.1f}".format(seed_dA_list[j]), (int(seed_tltrX_list[j] - 15), int(seed_tltrY_list[j] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2)
         cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
 
-
+    # Add the visualized measurement to the list
+    visualize_measurements_images_list.append(orignal_composite)
+    
     frame = frame + 1
 
     cv2.imshow("Measurement Visualization", orignal_composite)
@@ -435,6 +440,23 @@ file_csv = open('Semantic_Segmentation/implementation/Microtubules_Lengths.csv',
 writer_csv = csv.writer(file_csv)
 for concatenate_lengths_per_frame in Microtubules_Length_Concatenated_to_Seeds:
     writer_csv.writerow(concatenate_lengths_per_frame)
+
+
+# Generate vedio
+#########################################################################################################################
+
+fps = 3
+size = (1200,1200)
+#可以用(*'DVIX')或(*'X264'),如果都不行先装ffmepg: sudo apt-get install ffmepg
+
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+videoWriter = cv2.VideoWriter('Semantic_Segmentation/implementation/Microtubules_Lengths_Measurement.avi',fourcc,fps,size)#最后一个是保存图片的尺寸
+
+#for(i=1;i<471;++i)
+for visualize_measurement_frame in visualize_measurements_images_list:
+    videoWriter.write(visualize_measurement_frame)
+
+videoWriter.release()
 
 
 
