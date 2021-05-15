@@ -11,6 +11,12 @@ import imutils
 import csv
 import pwlf
 
+
+#### This script is to measure the lengths of microtubules and return the csv file recording the lengths information ####
+#### The input is images in 4 folder "implementation/input_image", "implementation/prediction_image", "implementation/prediction_seed" and "implementation/seed_image" ####
+#### Output of lengths information will be stored as csv file and some additional images to visualize the measurements ####
+
+
 # If cv2.imshow() function dosen't work, use the followed line of code
 os.environ['DISPLAY'] = ':1'
 
