@@ -4,6 +4,7 @@ import os
 import datetime
 import pydot
 import numpy as np
+import random
 import matplotlib
 from matplotlib import pyplot as plt
 from PIL import Image
@@ -85,10 +86,19 @@ train_images = load_and_padding_images("Semantic_Segmentation/training_data/imag
 train_labels = load_and_padding_images("Semantic_Segmentation/training_data/labels_aug",1)
 
 # Load test set images as a list
-test_images = load_and_padding_images("Semantic_Segmentation/training_data/test_images_aug",3)
+test_images = load_and_padding_images("Semantic_Segmentation/training_data/image_test",3)
 
 # Load test set labels as a list
-test_labels = load_and_padding_images("Semantic_Segmentation/training_data/test_labels_aug",1)
+test_labels = load_and_padding_images("Semantic_Segmentation/training_data/label_test",1)
+
+
+# Random shuffle the test data set
+data_size = test_images.shape[0]
+arr = np.arange(data_size)
+np.random.shuffle(arr)
+for i in range(len(test_images)):
+    test_images[i] = test_images[arr[i]]
+    test_labels[i] = test_labels[arr[i]]
 
 
 # Load customary x_train and y_train variables
@@ -117,7 +127,6 @@ imgsize4 = Y_test.shape
 print(imgsize4)
 
 # Select random image in training dataset to visualize
-import random
 image_number = random.randint(0, len(X)-1)
 
 cv2.imshow("X train",X[image_number])
