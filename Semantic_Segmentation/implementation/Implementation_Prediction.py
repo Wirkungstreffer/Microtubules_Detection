@@ -66,62 +66,65 @@ def delete_end_str(path):
 # Define a prediction process, with the input loading data are implementation images and outputs are segmentation predictions
 def load_and_predict(implementation_input_file, trained_model):
 
-    # Load the trained model
-    implementation_model = trained_model
+  # Load the trained model
+  implementation_model = trained_model
 
-    # Creat implementation images list
-    implementation_inputs = []
+  # Creat implementation images list
+  implementation_inputs = []
 
-    # Creat prediction of implementation images list
-    implementation_outputs = []
+  # Creat prediction of implementation images list
+  implementation_outputs = []
 
-    for directory_path in glob.glob(implementation_input_file):
+  for directory_path in glob.glob(implementation_input_file):
 
-        # Check if the implementation folder exist
-        if os.path.exists(implementation_input_file)==False:
-            raise FileNotFoundError( 'No such file or directory:'+ implementation_input_file)
+    # Check if the implementation folder exist
+    if os.path.exists(implementation_input_file)==False:
+        raise FileNotFoundError( 'No such file or directory:'+ implementation_input_file)
 
-        # Reading the images in the folder
-        implementation_img_path = glob.glob(os.path.join(directory_path, '*.png'))
+    # Reading the images in the folder
+    implementation_img_path = glob.glob(os.path.join(directory_path, '*.png'))
 
-        # Make sure reading sequence of the images is correctly according to the name sequence of images
-        implementation_img_path.sort()
-        for s in implementation_img_path:
-            
-            # Read the images as RGB mode
-            implementation_img = cv2.imread(s, cv2.IMREAD_COLOR)
+    # Make sure reading sequence of the images is correctly according to the name sequence of images
+    implementation_img_path.sort()
+    for s in implementation_img_path:
+        
+      # Read the images as RGB mode
+      implementation_img = cv2.imread(s, cv2.IMREAD_COLOR)
 
-            # Use reflect padding the images into size 1216x1216
-            implementation_reflect_img = cv2.copyMakeBorder(implementation_img,8,8,8,8,cv2.BORDER_REFLECT)       
-            
-            # Add up into implementation images list 
-            implementation_inputs.append(implementation_reflect_img)
-            
-            # Convert list to array for machine learning processing
-            implementation_reflect_img = np.array(implementation_reflect_img)
+      # Use reflect padding the images into size 1216x1216
+      implementation_reflect_img = cv2.copyMakeBorder(implementation_img,8,8,8,8,cv2.BORDER_REFLECT)       
+      
+      # Add up into implementation images list 
+      implementation_inputs.append(implementation_reflect_img)
+      
+      # Convert list to array for machine learning processing
+      implementation_reflect_img = np.array(implementation_reflect_img)
 
-            # Expand the dimension of images for machine learning processing
-            implementation_reflect_img = np.expand_dims(implementation_reflect_img, axis=0)
+      # Expand the dimension of images for machine learning processing
+      implementation_reflect_img = np.expand_dims(implementation_reflect_img, axis=0)
 
-            # Use the trained model to predict segmentations
-            implementation_prediction = implementation_model.predict(implementation_reflect_img)
+      # Use the trained model to predict segmentations
+      implementation_prediction = implementation_model.predict(implementation_reflect_img)
 
-            # Reshape the array into image
-            implementation_prediction_image = implementation_prediction.reshape(1216,1216)
+      # Reshape the array into image
+      implementation_prediction_image = implementation_prediction.reshape(1216,1216)
 
-            # Crop the output image into the original size
-            implementation_prediction_image_cropped = implementation_prediction_image[8:1208, 8:1208]
+      # Crop the output image into the original size
+      implementation_prediction_image_cropped = implementation_prediction_image[8:1208, 8:1208]
 
-            # Add up into prediction list
-            implementation_outputs.append(implementation_prediction_image_cropped)
-    
-    return implementation_inputs, implementation_outputs
+      # Add up into prediction list
+      implementation_outputs.append(implementation_prediction_image_cropped)
+  
+  return implementation_inputs, implementation_outputs
 
 
 
 # Set the seeds images and predictions saving path
 seed_image_file = "Semantic_Segmentation/implementation/seed_image/"
+
 predict_seed_file = "Semantic_Segmentation/implementation/prediction_seed"
+if os.path.exists(predict_seed_file)==False:
+    os.makedirs(predict_seed_file)
 
 # Load the trained model
 seed_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5", compile=False)
@@ -152,7 +155,10 @@ for n in range(0, len(seed_outputs)):
 
 # Set the implementation images and predictions saving path
 implementation_input_file = "Semantic_Segmentation/implementation/input_image/"
+
 implementation_predict_file = "Semantic_Segmentation/implementation/prediction_image/"
+if os.path.exists(implementation_predict_file)==False:
+    os.makedirs(implementation_predict_file)
 
 # Load the trained model
 implementation_model = keras.models.load_model("Semantic_Segmentation/MT_1216_Semantic_Segmentation.h5", compile=False)
