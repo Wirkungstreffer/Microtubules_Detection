@@ -17,6 +17,10 @@ def read_directory(directory):
         # Normalize them to 8-bit images
         img = cv2.normalize(tiff_image, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U) 
 
+        # Check if the output folder exist
+        if os.path.exists("Data_Process/8bit_tiff_file")==False:
+            os.makedirs("Data_Process/8bit_tiff_file")
+        
         # Save the transfered images into file "Data_Process/8bit_tiff_file"
         cv2.imwrite("Data_Process/8bit_tiff_file" + "/" + filename, img) 
 
