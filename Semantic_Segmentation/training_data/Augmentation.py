@@ -47,15 +47,24 @@ images_to_generate = 1500
 images_path = "Semantic_Segmentation/training_data/images/" 
 masks_path = "Semantic_Segmentation/training_data/labels/"
 
-test_images_path = "Semantic_Segmentation/training_data/image_test/" 
+test_images_path = "Semantic_Segmentation/training_data/image_test/"
 test_masks_path = "Semantic_Segmentation/training_data/label_test/"
 
-# Set the augmented images and labels saving path
-img_augmented_path = "Semantic_Segmentation/training_data/images_aug/" 
-msk_augmented_path = "Semantic_Segmentation/training_data/labels_aug/"
 
-test_img_augmented_path = "Semantic_Segmentation/training_data/test_images_aug/" 
+# Set the augmented images and labels saving path
+img_augmented_path = "Semantic_Segmentation/training_data/images_aug/"
+if os.path.exists(img_augmented_path)==False:
+    os.makedirs(img_augmented_path)
+msk_augmented_path = "Semantic_Segmentation/training_data/labels_aug/"
+if os.path.exists(msk_augmented_path)==False:
+    os.makedirs(msk_augmented_path)
+
+test_img_augmented_path = "Semantic_Segmentation/training_data/test_images_aug/"
+if os.path.exists(test_img_augmented_path)==False:
+    os.makedirs(test_img_augmented_path) 
 test_msk_augmented_path = "Semantic_Segmentation/training_data/test_labels_aug/"
+if os.path.exists(test_msk_augmented_path)==False:
+    os.makedirs(test_msk_augmented_path)
 
 # Load images and labels 
 images = load_images(images_path)
