@@ -18,7 +18,7 @@ import pwlf
 
 
 # If cv2.imshow() function dosen't work, use the followed line of code
-os.environ['DISPLAY'] = ':1'
+os.environ['DISPLAY'] = ':0'
 
 
 # Define a images loading function

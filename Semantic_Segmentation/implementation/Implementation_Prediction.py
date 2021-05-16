@@ -79,7 +79,7 @@ def load_and_predict(implementation_input_file, trained_model):
 
     # Check if the implementation folder exist
     if os.path.exists(implementation_input_file)==False:
-        raise FileNotFoundError( 'No such file or directory:'+ implementation_input_file)
+      raise FileNotFoundError( 'No such file or directory:'+ implementation_input_file)
 
     # Reading the images in the folder
     implementation_img_path = glob.glob(os.path.join(directory_path, '*.png'))
