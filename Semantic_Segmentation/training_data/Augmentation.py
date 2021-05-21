@@ -13,6 +13,7 @@ import albumentations as A
 #### !!!! The script Divide_Data_for_Training_and_Testing.py must be run before runing this script !!!! ##### 
 
 #### The functions of this script is to generate augmented images ####
+#### Each image will generate several but same quantity randomly augmentations ####
 #### The input data is the four files "/training_data/images/", "/training_data/labels/", "/training_data/image_test/" and "/training_data/label_test/"#### 
 #### Output data will automatically store in "training_data/images_aug/", "training_data/labels_aug/", "training_data/test_images_aug/" and "training_data/test_labels_aug/"####
 
@@ -105,7 +106,7 @@ while img_number < len(images):
 
     loop = 0
     
-    while loop < 4:
+    while loop < 6:
         # Apply augmentation
         augmented = aug(image = original_image, mask = original_mask)
         transformed_image = augmented['image']
