@@ -107,7 +107,7 @@ while img_number < len(images):
     # For each image do the quantity of "loop" randomly augmentation
     loop = 0
     
-    while loop < 5:
+    while loop < 6:
         # Apply augmentation
         augmented = aug(image = original_image, mask = original_mask)
         transformed_image = augmented['image']
