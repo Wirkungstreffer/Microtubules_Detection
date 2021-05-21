@@ -74,6 +74,8 @@ masks = load_images(masks_path)
 test_images = load_images(test_images_path)
 test_masks = load_images(test_masks_path)
 
+
+
 # Set up augmentation function
 aug = A.Compose([
     A.VerticalFlip(p=0.5),              
@@ -86,9 +88,10 @@ aug = A.Compose([
 )
 
 
-    
-# variable to iterate per image
+# Variants of generated augmentation count
 count = 1
+
+# Variants of image number of input data set
 img_number = 0
 
 # Pick a stochastic number to select the image & label in training set
@@ -104,6 +107,7 @@ while img_number < len(images):
     original_image = io.imread(image)
     original_mask = io.imread(mask)
 
+    # For each image do the quantity of "loop" randomly augmentation
     loop = 0
     
     while loop < 6:
@@ -119,6 +123,7 @@ while img_number < len(images):
         # Saving the augmented image & label
         io.imsave(new_image_path, transformed_image)
         io.imsave(new_mask_path, transformed_mask)
+        
         count = count + 1
         loop = loop + 1
     
