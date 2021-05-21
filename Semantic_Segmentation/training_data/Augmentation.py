@@ -40,9 +40,6 @@ def load_images(image_file_directory):
     return images
 
 
-# Set the to be generated augmented image number
-images_to_generate = 4
-test_images_to_generate = 4
 
 # Set the original images and labels folder path
 images_path = "Semantic_Segmentation/training_data/images/" 
@@ -110,7 +107,7 @@ while img_number < len(images):
     # For each image do the quantity of "loop" randomly augmentation
     loop = 0
     
-    while loop < 6:
+    while loop < 5:
         # Apply augmentation
         augmented = aug(image = original_image, mask = original_mask)
         transformed_image = augmented['image']
