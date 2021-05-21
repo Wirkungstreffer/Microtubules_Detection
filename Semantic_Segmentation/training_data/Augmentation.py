@@ -40,8 +40,8 @@ def load_images(image_file_directory):
 
 
 # Set the to be generated augmented image number
-images_to_generate = 1500
-#test_images_to_generate = 300
+images_to_generate = 4
+test_images_to_generate = 4
 
 # Set the original images and labels folder path
 images_path = "Semantic_Segmentation/training_data/images/" 
@@ -84,45 +84,44 @@ aug = A.Compose([
     ]
 )
 
-# Define a function which generate augmented data
-def generate_augmented_data(aug_images_to_generate, images, masks, save_image_path, save_mask_path, image_tag):
+
     
-    # variable to iterate till images_to_generate
-    i = 1 
+# variable to iterate per image
+count = 1
+img_number = 0
 
-    # Use the loop to generate augmented images
-    while i <= aug_images_to_generate: 
-        
-        # Pick a stochastic number to select the image & label in training set
-        number = random.randint(0, len(images)-1)  
-        image = images[number]
-        mask = masks[number]
+# Pick a stochastic number to select the image & label in training set
+while img_number < len(images):  
+    
+    image = images[img_number]
+    mask = masks[img_number]
 
-        # Print randomly selected image and label name
-        print(image, mask)
+    # Print randomly selected image and label name
+    print(image, mask)
 
-        # Read the original image and label
-        original_image = io.imread(image)
-        original_mask = io.imread(mask)
-        
+    # Read the original image and label
+    original_image = io.imread(image)
+    original_mask = io.imread(mask)
+
+    loop = 0
+    
+    while loop < 4:
         # Apply augmentation
         augmented = aug(image = original_image, mask = original_mask)
         transformed_image = augmented['image']
         transformed_mask = augmented['mask']
 
         # Change the names for recognition and further easy to load    
-        new_image_path = "%s/augmented%s_image_%s.png" %(save_image_path, image_tag, i)
-        new_mask_path = "%s/augmented%s_mask_%s.png" %(save_mask_path, image_tag, i)
+        new_image_path = "%s/augmented%s_image_%s.png" %(img_augmented_path, "_training", count)
+        new_mask_path = "%s/augmented%s_mask_%s.png" %(msk_augmented_path, "_training", count)
 
         # Saving the augmented image & label
         io.imsave(new_image_path, transformed_image)
         io.imsave(new_mask_path, transformed_mask)
-        
-        i =i+1
+        count = count + 1
+        loop = loop + 1
+    
+    img_number = img_number + 1
+    
 
 
-# Generate augmented train set data
-generate_augmented_data(images_to_generate, images, masks, img_augmented_path, msk_augmented_path,"_train")
-
-# Generate augmented test set data
-#generate_augmented_data(test_images_to_generate, test_images, test_masks, test_img_augmented_path, test_msk_augmented_path, "_test")
