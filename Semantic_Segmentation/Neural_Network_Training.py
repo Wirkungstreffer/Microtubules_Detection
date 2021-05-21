@@ -92,13 +92,17 @@ test_images = load_and_padding_images("Semantic_Segmentation/training_data/image
 test_labels = load_and_padding_images("Semantic_Segmentation/training_data/label_test",1)
 
 
-# Random shuffle the test data set
-data_size = test_images.shape[0]
+# Create a list with the same length of training data
+data_size = train_images.shape[0]
+
+# Random shuffle the list
 arr = np.arange(data_size)
 np.random.shuffle(arr)
+
+# Set the shuffled list to the data set
 for i in range(len(test_images)):
-    test_images[i] = test_images[arr[i]]
-    test_labels[i] = test_labels[arr[i]]
+    train_images[i] = train_images[arr[i]]
+    train_labels[i] = train_labels[arr[i]]
 
 
 # Load customary x_train and y_train variables
