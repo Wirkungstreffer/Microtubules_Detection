@@ -99,10 +99,22 @@ data_size = train_images.shape[0]
 arr = np.arange(data_size)
 np.random.shuffle(arr)
 
-# Set the shuffled list to the training data set
-for i in range(len(test_images)):
+# Set the shuffled list to the data set
+for i in range(len(train_images)):
     train_images[i] = train_images[arr[i]]
     train_labels[i] = train_labels[arr[i]]
+
+# Create a list with the same length of test data set
+test_data_size = test_images.shape[0]
+
+# Random shuffle the list
+test_arr = np.arange(test_data_size)
+np.random.shuffle(test_arr)
+
+# Set the shuffled list to the data set
+for j in range(len(test_images)):
+    test_images[j] = test_images[test_arr[j]]
+    test_labels[j] = test_labels[test_arr[j]]
 
 
 # Load customary x_train and y_train variables
