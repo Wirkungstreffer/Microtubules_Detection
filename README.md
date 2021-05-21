@@ -35,8 +35,8 @@ Guide:
 
 2. Download data from the link https://drive.google.com/file/d/1lGBidoPvOS4NNZUAArCJNOjuyDw_x_bH/view?usp=sharing
 
-3. Extract the data, move the images in folder "image" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/images",
-move the labels in folder "label" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/labels".
+3. Extract the data, move the images in folder "images" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/images",
+move the labels in folder "labels" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/labels".
 
 4. Run the script Divide_Data_for_Training_and_Testing.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/"
 
