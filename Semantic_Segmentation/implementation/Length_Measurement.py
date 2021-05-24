@@ -11,14 +11,13 @@ import imutils
 import csv
 import pwlf
 
-
 #### This script is to measure the lengths of microtubules and return the csv file recording the lengths information ####
 #### The input is images in 4 folder "implementation/input_image", "implementation/prediction_image", "implementation/prediction_seed" and "implementation/seed_image" ####
 #### Output of lengths information will be stored as csv file and some additional images to visualize the measurements ####
 
 
 # If cv2.imshow() function dosen't work, use the followed line of code
-os.environ['DISPLAY'] = ':0'
+os.environ['DISPLAY'] = ':1'
 
 
 # Define a images loading function
@@ -99,7 +98,7 @@ seed_image_noise_reduce = np.zeros((seed_labels.shape), np.uint8)
 for i in range(0, seed_nlabels - 1):
     
     # If the segmented area is large, consider it is not a noise segmentation
-    if seed_areas[i] >= 2:   
+    if seed_areas[i] >= 5:   
         seed_image_noise_reduce[seed_labels == i + 1] = 255
 
 # Get contours of segmentations
@@ -154,9 +153,6 @@ for seed_c in seed_cnts:
     (seed_tlblX, seed_tlblY) = midpoint(seed_tl, seed_bl)
     (seed_trbrX, seed_trbrY) = midpoint(seed_tr, seed_br)
 
-    # Add the endpoints coordinates into list
-    seed_endpoints_list.append([(seed_tlblX, seed_tlblY),(seed_trbrX, seed_trbrY)])
-
     # Add the points into the lists
     seed_tltrX_list.append(seed_tltrX)
     seed_tltrY_list.append(seed_tltrY)
@@ -176,6 +172,12 @@ for seed_c in seed_cnts:
     seed_dA_list.append(seed_dA)
     seed_dB_list.append(seed_dB)
 
+    # Add the endpoints coordinates into list
+    if seed_dB >= seed_dA:
+        seed_endpoints_list.append([(seed_tlblX, seed_tlblY),(seed_trbrX, seed_trbrY)])
+    else:
+        seed_endpoints_list.append([(seed_tltrX, seed_tltrY),(seed_blbrX, seed_blbrY)])
+
 # Convert the list to array for the further process
 seed_tltrX_list = np.array(seed_tltrX_list)
 seed_tltrY_list = np.array(seed_tltrY_list)
@@ -192,11 +194,11 @@ seed_dB_list = np.array(seed_dB_list)
 
 # Draw the length & width line and the number
 seed_predict_img = seed_image_noise_reduce.copy()
-for i in range(len(seed_tltrX_list)):
-    cv2.line(seed_predict_img, (int(seed_tltrX_list[i]), int(seed_tltrY_list[i])), (int(seed_blbrX_list[i]), int(seed_blbrY_list[i])),(255, 0, 255), 2)
-    cv2.line(seed_predict_img, (int(seed_tlblX_list[i]), int(seed_tlblY_list[i])), (int(seed_trbrX_list[i]), int(seed_trbrY_list[i])),(255, 0, 255), 2)
-    cv2.putText(seed_predict_img, "{:.1f}".format(seed_dA_list[i]), (int(seed_tltrX_list[i] - 15), int(seed_tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
-    cv2.putText(seed_predict_img, "{:.1f}".format(seed_dB_list[i]), (int(seed_trbrX_list[i] + 10), int(seed_trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 255, 255), 2)
+for w in range(len(seed_tltrX_list)):
+    cv2.line(seed_predict_img, (int(seed_tltrX_list[w]), int(seed_tltrY_list[w])), (int(seed_blbrX_list[w]), int(seed_blbrY_list[w])),(255, 0, 255), 2)
+    cv2.line(seed_predict_img, (int(seed_tlblX_list[w]), int(seed_tlblY_list[w])), (int(seed_trbrX_list[w]), int(seed_trbrY_list[w])),(255, 0, 255), 2)
+    cv2.putText(seed_predict_img, "{:.1f}".format(seed_dA_list[w]), (int(seed_tltrX_list[w] - 15), int(seed_tltrY_list[w] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
+    cv2.putText(seed_predict_img, "{:.1f}".format(seed_dB_list[w]), (int(seed_trbrX_list[w] + 10), int(seed_trbrY_list[w])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 255, 255), 2)
 
 
 #cv2.imshow('seed',seed_predict_img)
@@ -351,6 +353,7 @@ for image in array_of_predict_input_image:
         correspond_mt_per_seed = []
         min_index_list = []
         min_val_list = []
+        seed_endpoint_validation_number = 0
         
         # Calculate the distance between each seeds and microtubules, save the microtubules have smaller distance than tolerance with seeds
         for mt in range(len(tlblX_list)):
@@ -363,13 +366,17 @@ for image in array_of_predict_input_image:
 
             # Save the microtubules index has smaller than tolerance
             if distance_1 < tolerance:
-                correspond_mt.append(mt) 
+                correspond_mt.append(mt)
+                seed_endpoint_validation_number = 1 
             elif distance_2 < tolerance:
-                correspond_mt.append(mt) 
+                correspond_mt.append(mt)
+                seed_endpoint_validation_number = 1  
             elif distance_3 < tolerance:
                 correspond_mt.append(mt) 
+                seed_endpoint_validation_number = 2
             elif distance_4 < tolerance:
                 correspond_mt.append(mt) 
+                seed_endpoint_validation_number = 2
             else:
                 correspond_mt.append(len(tlblX_list) + 200)
 
@@ -388,9 +395,14 @@ for image in array_of_predict_input_image:
             if min_val_list[x] == len(tlblX_list) + 200 :
                 seed_correspond_microtubules_width.append(0)
                 seed_correspond_microtubules_length.append(0)
-            else :
+            elif seed_endpoint_validation_number == 1 :
                 seed_correspond_microtubules_width.append(dA_list[min_index_list[x]])
-                seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])
+                #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
+                seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_1,(tlblX_list[min_index_list[x]],tlblY_list[min_index_list[x]])), dist.euclidean(seed_endpoint_1,(trbrX_list[min_index_list[x]],trbrY_list[min_index_list[x]]))))
+            elif seed_endpoint_validation_number == 2 :
+                seed_correspond_microtubules_width.append(dA_list[min_index_list[x]])
+                #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
+                seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_2,(tlblX_list[min_index_list[x]],tlblY_list[min_index_list[x]])), dist.euclidean(seed_endpoint_1,(trbrX_list[min_index_list[x]],trbrY_list[min_index_list[x]]))))
 
     # Add seed image and microtubules image
     add_img = cv2.add(seed_original,input_original)
@@ -399,26 +411,36 @@ for image in array_of_predict_input_image:
     orignal_composite = add_img.copy()
     for i in range(len(tltrX_list)):
         # Draw lines and informations of microtubules
-        cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
-        cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
-        cv2.putText(orignal_composite, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 255), 2)
-        cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
+        #cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
+        #cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
+        #cv2.putText(orignal_composite, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 255), 2)
+        #cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
+        cv2.circle(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), 2, (255, 0, 255), -1)
+        cv2.circle(orignal_composite, (int(blbrX_list[i]), int(blbrY_list[i])), 2, (255, 0, 255), -1)
+        cv2.circle(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), 2, (255, 0, 255), -1)
+        cv2.circle(orignal_composite, (int(trbrX_list[i]), int(trbrY_list[i])), 2, (255, 0, 255), -1)
 
     for j in range(len(seed_tltrX_list)):
         # Draw lines and informations of microtubules
-        cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
-        cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
-        cv2.putText(orignal_composite, "{:.1f}".format(seed_dA_list[j]), (int(seed_tltrX_list[j] - 15), int(seed_tltrY_list[j] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2)
-        cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
+        #cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
+        #cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
+        #cv2.putText(orignal_composite, "{:.1f}".format(seed_dA_list[j]), (int(seed_tltrX_list[j] - 15), int(seed_tltrY_list[j] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2)
+        #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
+        cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
+        cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
+        cv2.circle(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), 2, (0, 255, 255), -1)
+        cv2.circle(orignal_composite, (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])), 2, (0, 255, 255), -1)
 
     # Add the visualized measurement to the list
     visualize_measurements_images_list.append(orignal_composite)
     
     frame = frame + 1
 
-    cv2.imshow("Measurement Visualization", orignal_composite)
-    cv2.waitKey(0)
+    #cv2.imshow("Measurement Visualization", orignal_composite)
+    #cv2.waitKey(0)
 
+# Generate csv files
+#########################################################################################################################
 
 # Create a list to store the lengths information
 Microtubules_Length_Concatenated_to_Seeds = []
@@ -436,10 +458,17 @@ for width in range(0,len(seed_correspond_microtubules_width),len(seed_endpoints_
 
 
 # Store the information into csv file
-file_csv = open('Semantic_Segmentation/implementation/Microtubules_Lengths.csv','w',newline='')
-writer_csv = csv.writer(file_csv)
+file_csv_1 = open('Semantic_Segmentation/implementation/Microtubules_Lengths_with_Seed_Concatenation.csv','w',newline='')
+writer_csv_1 = csv.writer(file_csv_1)
 for concatenate_lengths_per_frame in Microtubules_Length_Concatenated_to_Seeds:
-    writer_csv.writerow(concatenate_lengths_per_frame)
+    writer_csv_1.writerow(concatenate_lengths_per_frame)
+
+
+# Store the information into csv file
+file_csv_2 = open('Semantic_Segmentation/implementation/Microtubules_Lengths_without_Concatenation.csv','w',newline='')
+writer_csv_2 = csv.writer(file_csv_2)
+for lengths_per_frame in Length_Micotubulues:
+    writer_csv_2.writerow(lengths_per_frame)
 
 
 # Generate vedio
@@ -461,27 +490,51 @@ videoWriter.release()
 # Use piecewise linear regression to generate the plot and velocity
 #########################################################################################################################
 
+# Define a function that eliminate outliers 
+def reject_outliers(data):
+    # Create a list to store filtered data
+    data_filtered = []
+    data_non_zero = []
+    
+    # Caculate mean and variance of the data
+    for n_z in data:
+        if n_z != 0:
+            data_non_zero.append(n_z)
+
+    u = np.mean(data_non_zero)
+    s = np.std(data_non_zero)
+
+    # Save the data within 2 standard deviation
+    for d in data_non_zero:
+        if (d>(u-2*s)) & (d<(u+2*s)):
+            data_filtered.append(d)
+    
+    return data_filtered
 
 # Select on microtubules to verify
-select_microtubules_number = 7
+select_microtubules_number = 1
 
 Case_Microtubules = []
 for m in Microtubules_Length_Concatenated_to_Seeds:
     Case_Microtubules.append(m[select_microtubules_number-1])
 
+# Delete outliers
+Case_Microtubules_Delete_Outliers = reject_outliers(Case_Microtubules)
+
 # Scatter plot the length
-x = np.array([np.arange(0,len(Microtubules_Length_Concatenated_to_Seeds))])
-y = np.array([Case_Microtubules])
+x = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
+y = np.array([Case_Microtubules_Delete_Outliers])
+
 
 plt.scatter(x, y)
 #plt.show()
 
 # Transfer into array for further process
-x_l = np.array([np.arange(0,len(Microtubules_Length_Concatenated_to_Seeds))])
-y_l = Case_Microtubules
+x_l = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
+y_l = Case_Microtubules_Delete_Outliers
 
 # Use piecewise linear regression
-breakpoint_number = 3
+breakpoint_number = 5
 
 my_pwlf = pwlf.PiecewiseLinFit(x_l, y_l)
 breaks = my_pwlf.fit(breakpoint_number)
@@ -493,6 +546,6 @@ y_hat = my_pwlf.predict(x_hat)
 plt.figure()
 plt.plot(x, y, 'o')
 plt.plot(x_hat, y_hat, '-')
-PLWF_image_save_path = "Semantic_Segmentation/implementation/(Example)Number_%s_Microtubules_Lengths_Linear_Regressioin" %(select_microtubules_number)
-plt.savefig(PLWF_image_save_path)
+pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Linear_Regressioin" %(select_microtubules_number)
+plt.savefig(pwlf_image_save_path)
 #plt.show()
