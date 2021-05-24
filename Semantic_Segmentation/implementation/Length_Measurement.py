@@ -512,7 +512,7 @@ def reject_outliers(data):
     return data_filtered
 
 # Select on microtubules to verify
-select_microtubules_number = 1
+select_microtubules_number = 17
 
 Case_Microtubules = []
 for m in Microtubules_Length_Concatenated_to_Seeds:
@@ -525,8 +525,9 @@ Case_Microtubules_Delete_Outliers = reject_outliers(Case_Microtubules)
 x = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
 y = np.array([Case_Microtubules_Delete_Outliers])
 
-
-plt.scatter(x, y)
+plt.scatter(x, y, s=5)
+scatter_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Scatter_Image" %(select_microtubules_number)
+plt.savefig(scatter_image_save_path)
 #plt.show()
 
 # Transfer into array for further process
@@ -534,7 +535,7 @@ x_l = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
 y_l = Case_Microtubules_Delete_Outliers
 
 # Use piecewise linear regression
-breakpoint_number = 5
+breakpoint_number = 9
 
 my_pwlf = pwlf.PiecewiseLinFit(x_l, y_l)
 breaks = my_pwlf.fit(breakpoint_number)
@@ -544,7 +545,7 @@ x_hat = np.linspace(x.min(), x.max(), 100)
 y_hat = my_pwlf.predict(x_hat)
 
 plt.figure()
-plt.plot(x, y, 'o')
+plt.plot(x, y, markersize = 2, marker = 'o')
 plt.plot(x_hat, y_hat, '-')
 pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Linear_Regressioin" %(select_microtubules_number)
 plt.savefig(pwlf_image_save_path)
