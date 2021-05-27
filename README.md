@@ -48,7 +48,11 @@ move the labels in folder "labels" to the repository folder "Microtubules_Detect
 
 To implement into new sequence after model is trained:
 
-1. Put frames into folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/input_image", and seeds image into folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/seed_image".
+(Make sure the trained network("MT_1216_Semantic_Segmentation.h5") is in the folder "Microtubules_Detection_Master/Semantic_Segmentation/")
+
+1. Backup the last implementation data, run Delete_Last_Implementation_Data.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
+
+2. Put ND2 video into folder "Data_Process", and seeds image into folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/seed_image".
 
 2. Run Implementation_Prediction.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
 
