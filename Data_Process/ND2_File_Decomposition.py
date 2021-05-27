@@ -75,5 +75,5 @@ def convert_16bit_to_8bit(images, filename, output_path, contrast, brightness):
     
 
 # Run the convert function
-convert_16bit_to_8bit(images, filename, output_path, 1.1, 0)
+convert_16bit_to_8bit(images, filename, output_path, 1.0, 0)
 convert_16bit_to_8bit(seeds_image, filename_seed, output_path_seed, 1.1, 10)
