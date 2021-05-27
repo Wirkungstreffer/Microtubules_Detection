@@ -69,11 +69,11 @@ def convert_16bit_to_8bit(images, filename, output_path, contrast, brightness):
       os.makedirs(output_path)
     
     # Save the transfered images into file "Data_Process/Video_Frames_8bit_tiff"
-    cv2.imwrite(output_path + "/" + filename + "_%d.png"%(image_number), image_8bit)
+    cv2.imwrite(output_path + "/" + filename + "_%03d.png"%(image_number), image_8bit)
     
     image_number = image_number + 1
     
 
 # Run the convert function
-convert_16bit_to_8bit(images, filename, output_path, 1.0, 0)
-convert_16bit_to_8bit(seeds_image, filename_seed, output_path_seed, 1.1, 20)
+convert_16bit_to_8bit(images, filename, output_path, 1.1, 0)
+convert_16bit_to_8bit(seeds_image, filename_seed, output_path_seed, 1.1, 10)
