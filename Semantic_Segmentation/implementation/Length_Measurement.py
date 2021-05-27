@@ -216,7 +216,7 @@ seed_correspond_microtubules_length = []
 seed_correspond_microtubules_width = []
 
 # Set up deviation pixels tolerance
-tolerance = 10
+tolerance = 8
 
 # Create list to store the number of length
 Length_Micotubulues = []
@@ -506,13 +506,13 @@ def reject_outliers(data):
 
     # Save the data within 2 standard deviation
     for d in data_non_zero:
-        if (d>(u-2*s)) & (d<(u+2*s)):
+        if (d>(u-1*s)) & (d<(u+1*s)):
             data_filtered.append(d)
     
     return data_filtered
 
 # Select on microtubules to verify
-select_microtubules_number = 17
+select_microtubules_number = 1
 
 Case_Microtubules = []
 for m in Microtubules_Length_Concatenated_to_Seeds:
@@ -535,7 +535,7 @@ x_l = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
 y_l = Case_Microtubules_Delete_Outliers
 
 # Use piecewise linear regression
-breakpoint_number = 9
+breakpoint_number = 7
 
 my_pwlf = pwlf.PiecewiseLinFit(x_l, y_l)
 breaks = my_pwlf.fit(breakpoint_number)
