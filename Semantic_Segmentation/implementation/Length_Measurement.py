@@ -98,11 +98,11 @@ seed_image_noise_reduce = np.zeros((seed_labels.shape), np.uint8)
 for i in range(0, seed_nlabels - 1):
     
     # If the segmented area is large, consider it is not a noise segmentation
-    if seed_areas[i] >= 5:   
+    if seed_areas[i] >= 20:   
         seed_image_noise_reduce[seed_labels == i + 1] = 255
 
 # Get contours of segmentations
-seed_cnts = cv2.findContours(seed_image_noise_reduce, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+seed_cnts = cv2.findContours(seed_image_noise_reduce, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 seed_cnts = imutils.grab_contours(seed_cnts)
 
 pixelsPerMetric = None
