@@ -23,15 +23,19 @@ if os.path.exists(copy_seeds_path)==False:
 def duplicate_images(source_path, output_path):
     # Get the images list
     images = os.listdir(source_path)
+
+    images.sort()
     
     # Start duplicate
     for image in images:
         
         # Designate output file directory
         output_image_path = os.path.join(source_path, image)
-        
-        # Copy image
-        shutil.copy(output_image_path, output_path)
+
+        if os.path.isfile(output_image_path):
+            print (output_image_path)
+            # Copy image
+            shutil.copy(output_image_path, output_path)
 
 
 # Run the copy function
