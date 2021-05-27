@@ -52,7 +52,11 @@ To implement into new sequence after model is trained:
 
 1. Backup the last implementation data, run Delete_Last_Implementation_Data.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
 
-2. Put ND2 video into folder "Data_Process", and seeds image into folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/seed_image".
+2. Put ND2 video into folder "Data_Process/ND2_Video/", and seeds ND2 file into folder "Data_Process/ND2_Seeds/".
+
+3. Run ND2_File_Decomposition.py in folder "Data_Process/"
+
+4. Run Duplicate_Data_to_Implementation_Input_Folder.py in folder "Data_Process/"
 
 2. Run Implementation_Prediction.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
 
