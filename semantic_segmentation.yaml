@@ -13,9 +13,9 @@ dependencies:
   - blas=1.0=mkl
   - bleach=3.3.0=pyhd3eb1b0_0
   - bzip2=1.0.8=h7b6447c_0
-  - ca-certificates=2020.12.5=ha878542_0
+  - ca-certificates=2020.10.14=0
   - cairo=1.16.0=hf32fb01_1
-  - certifi=2020.12.5=py37h89c1867_1
+  - certifi=2020.6.20=py37_0
   - cffi=1.14.5=py37h261ae71_0
   - cloudpickle=1.6.0=py_0
   - cudatoolkit=10.1.243=h6bb024c_0
@@ -36,7 +36,7 @@ dependencies:
   - fsspec=0.9.0=pyhd3eb1b0_0
   - future=0.18.2=py37_1
   - geos=3.8.1=he6710b0_0
-  - glib=2.68.0=h36276a3_0
+  - glib=2.68.2=h36276a3_0
   - graphite2=1.3.14=h23475e2_0
   - gst-plugins-base=1.14.0=hbbd80ab_1
   - gstreamer=1.14.0=h28cd5cc_2
@@ -90,6 +90,7 @@ dependencies:
   - locket=0.2.1=py37h06a4308_1
   - lz4-c=1.9.3=h2531618_0
   - markupsafe=1.1.1=py37h14c3975_1
+  - matplotlib-base=3.3.1=py37h817c723_0
   - mistune=0.8.4=py37h14c3975_1001
   - mkl=2020.4=h726a3e6_304
   - mkl-service=2.3.0=py37he8ac12f_0
@@ -105,6 +106,7 @@ dependencies:
   - nest-asyncio=1.5.1=pyhd3eb1b0_0
   - ninja=1.10.2=hff7bd54_1
   - notebook=6.3.0=py37h06a4308_0
+  - numpy-base=1.19.2=py37hfa32c7d_0
   - olefile=0.46=py37_0
   - opencv=3.4.2=py37h6fd60c2_1
   - openssl=1.1.1k=h7f98852_0
@@ -190,11 +192,20 @@ dependencies:
   - pip:
     - absl-py==0.12.0
     - albumentations==0.5.2
+    - argparse==1.4.0
+    - args==0.1.0
     - astropy==4.2.1
     - astunparse==1.6.3
+    - beautifulsoup4==4.9.3
     - cachetools==4.2.1
     - chardet==4.0.0
+    - click==8.0.1
+    - clint==0.5.1
+    - colorama==0.4.4
+    - cryptography==3.4.7
     - cython==0.29.22
+    - demjson==2.2.4
+    - docutils==0.17.1
     - efficientnet==1.0.0
     - fil-finder==1.7
     - flatbuffers==1.12
@@ -208,43 +219,62 @@ dependencies:
     - image-classifiers==1.0.0
     - imgaug==0.4.0
     - imgviz==1.2.6
+    - jeepney==0.6.0
     - joblib==1.0.1
+    - jtutils==0.0.8
     - keras==2.4.3
     - keras-applications==1.0.8
     - keras-preprocessing==1.1.2
     - keras-utils==1.0.13
+    - keyring==23.0.1
     - labelme==4.5.7
+    - leven==1.0.4
     - llvmlite==0.36.0
     - markdown==3.3.4
     - matplotlib==3.2.2
+    - nd2reader==3.3.0
     - networkx==2.5.1
+    - nose==1.3.7
     - numba==0.53.1
     - numpy==1.19.5
     - oauthlib==3.1.0
     - opencv-contrib-python==4.5.1.48
     - opencv-contrib-python-headless==4.5.1.48
-    - opencv-python==4.3.0.36
+    - opencv-python==4.1.2.30
     - opencv-python-headless==4.5.1.48
     - opt-einsum==3.3.0
     - pbr==5.5.1
+    - pim==1.0.1
+    - pims==0.5
+    - pims-nd2==1.1
+    - pkginfo==1.7.0
     - protobuf==3.15.8
     - pyasn1==0.4.8
     - pyasn1-modules==0.2.8
+    - pycairo==1.20.0
     - pydot==1.4.2
     - pyerfa==1.7.3
     - pygame==2.0.1
     - pyqt5==5.15.4
     - pyqt5-qt5==5.15.2
     - pyqt5-sip==12.8.1
+    - python-csv==0.0.13
     - python-graphviz==0.16
+    - readme-renderer==29.0
     - requests==2.25.1
     - requests-oauthlib==1.3.0
+    - requests-toolbelt==0.9.1
+    - rfc3986==1.5.0
     - rsa==4.7.2
     - scikit-image==0.18.1
     - scikit-learn==0.24.1
     - scipy==1.4.1
+    - secretstorage==3.3.1
     - segmentation-models==1.0.1
+    - selenium==3.141.0
     - skan==0.9
+    - slicerator==1.0.0
+    - soupsieve==2.2.1
     - tensorboard==2.2.2
     - tensorboard-plugin-wit==1.8.0
     - tensorflow==2.2.0
@@ -254,8 +284,11 @@ dependencies:
     - termcolor==1.1.0
     - threadpoolctl==2.1.0
     - tifffile==2021.4.8
+    - twine==3.4.1
     - typeguard==2.12.0
     - urllib3==1.26.4
     - werkzeug==1.0.1
     - wrapt==1.12.1
+    - xlrd==2.0.1
+    - xmltodict==0.12.0
 prefix: /home/ben/anaconda3/envs/semantic_segmentation
