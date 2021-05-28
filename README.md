@@ -2,7 +2,7 @@ Microtubules Detections
 
 Readme
 
-#############################################################################################################
+#############################################################################################
 
 Recommended hardware environment:
 
@@ -27,7 +27,7 @@ Training semantic CNN could direct import conda env semantic_segmentation.yaml
 
 Training DeepLabCut could direct import conda env DLC.yaml
 
-#############################################################################################################
+#############################################################################################
 
 Guide:
 
@@ -44,7 +44,7 @@ move the labels in folder "labels" to the repository folder "Microtubules_Detect
 
 6. Run the script Neural_Network_Training.py in folder "Microtubules_Detection-master/Semantic_Segmentation/".
 
-#############################################################################################################
+#############################################################################################
 
 To implement into new sequence after model is trained:
 
@@ -63,6 +63,6 @@ Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF
 
 3. Run Length_Measurement.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
 
-#############################################################################################################
+#############################################################################################
 
 To transfer json file to image data, use console cd to the file, run $sh json_to_dataset.sh
