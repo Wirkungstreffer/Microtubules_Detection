@@ -17,7 +17,7 @@ hard drive space >= 80GB
 
 Recommended software environment:
 
-GPU driver: nvidia-driver-450
+GPU driver: nvidia-driver-450 or nvidia-driver-460
 
 CUDA driver: V10.1
 
