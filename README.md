@@ -35,33 +35,33 @@ Guide:
 
 2. Download data from the link https://drive.google.com/file/d/1lGBidoPvOS4NNZUAArCJNOjuyDw_x_bH/view?usp=sharing
 
-3. Extract the data, move the images in folder "images" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/images",
-move the labels in folder "labels" to the repository folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/labels".
+3. Extract the data, move the images in folder "images" to the repository folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/images",
+move the labels in folder "labels" to the repository folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/labels".
 
-4. Run the script Divide_Data_for_Training_and_Testing.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/"
+4. Run the script Divide_Data_for_Training_and_Testing.py in folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/"
 
-5. Run the script Augmentation.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/training_data/".
+5. Run the script Augmentation.py in folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/".
 
-6. Run the script Neural_Network_Training.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/".
+6. Run the script Neural_Network_Training.py in folder "Microtubules_Detection-master/Semantic_Segmentation/".
 
 #########################################################################
 
 To implement into new sequence after model is trained:
 
 Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF6n4mP0bd7U7637yIShauK7/view?usp=sharing
-(Make sure the trained network("MT_1216_Semantic_Segmentation.h5") is in the folder "Microtubules_Detection_Master/Semantic_Segmentation/")
+(Make sure the trained network("MT_1216_Semantic_Segmentation.h5") is in the folder "Microtubules_Detection-master/Semantic_Segmentation/")
 
-1. Backup the last implementation data, run Delete_Last_Implementation_Data.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
+1. Backup the last implementation data, run Delete_Last_Implementation_Data.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
 
-2. Put ND2 video into folder "Data_Process/ND2_Video/", and seeds ND2 file into folder "Data_Process/ND2_Seeds/".
+2. Put ND2 video into folder "Microtubules_Detection-master/Data_Process/ND2_Video/", and seeds ND2 file into folder "Microtubules_Detection-master/Data_Process/ND2_Seeds/".
 
-3. Run ND2_File_Decomposition.py in folder "Data_Process/"
+3. Run ND2_File_Decomposition.py in folder "Microtubules_Detection-master/Data_Process/"
 
-4. Run Duplicate_Data_to_Implementation_Input_Folder.py in folder "Data_Process/"
+4. Run Duplicate_Data_to_Implementation_Input_Folder.py in folder "Microtubules_Detection-master/Data_Process/"
 
-2. Run Implementation_Prediction.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
+2. Run Implementation_Prediction.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
 
-3. Run Length_Measurement.py in folder "Microtubules_Detection_Master/Semantic_Segmentation/implementation/"
+3. Run Length_Measurement.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
 
 #########################################################################
 
