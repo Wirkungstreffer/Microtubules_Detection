@@ -9,6 +9,7 @@ from imutils import perspective
 from imutils import contours
 import imutils
 import csv
+from itertools import islice
 import pwlf
 
 #### This script is to measure the lengths of microtubules and return the csv file recording the lengths information ####
@@ -98,7 +99,7 @@ seed_image_noise_reduce = np.zeros((seed_labels.shape), np.uint8)
 for i in range(0, seed_nlabels - 1):
     
     # If the segmented area is large, consider it is not a noise segmentation
-    if seed_areas[i] >= 20:   
+    if seed_areas[i] >= 5:   
         seed_image_noise_reduce[seed_labels == i + 1] = 255
 
 # Get contours of segmentations
@@ -131,7 +132,7 @@ seed_endpoints_list = []
 for seed_c in seed_cnts:
     
     # if it's too small, it might be noise, just ignore it
-    if cv2.contourArea(seed_c) < 20:
+    if cv2.contourArea(seed_c) < 5:
         continue
 
     # Use minimal area rectangular to box the segmentation
@@ -274,7 +275,7 @@ for image in array_of_predict_input_image:
     dA_list = []
     dB_list = []
 
-    # for loop for all contour
+    # Loop for all contour
     for c in cnts:
         
         # if it's too small, it might be noise, just ignore it
@@ -364,7 +365,7 @@ for image in array_of_predict_input_image:
             distance_3 = dist.euclidean(seed_endpoint_2, (tlblX_list[mt], tlblY_list[mt]))
             distance_4 = dist.euclidean(seed_endpoint_2, (trbrX_list[mt], trbrY_list[mt]))
 
-            # Save the microtubules index has smaller than tolerance
+            # Save the microtubules index which has smaller distance than tolerance
             if distance_1 < tolerance:
                 correspond_mt.append(mt)
                 seed_endpoint_validation_number = 1 
@@ -390,17 +391,14 @@ for image in array_of_predict_input_image:
             min_index_list.append(correspond_mt.index(min(the_index)))
             min_val_list.append(min(the_index))
         
-        # Save the corresponding length information to the seed_correspond_microtubules lists
+        # Save the seed corresponding microtubules length information to the seed_correspond_microtubules lists
         for x in range(len(min_index_list)):
             if min_val_list[x] == len(tlblX_list) + 200 :
-                seed_correspond_microtubules_width.append(0)
                 seed_correspond_microtubules_length.append(0)
             elif seed_endpoint_validation_number == 1 :
-                seed_correspond_microtubules_width.append(dA_list[min_index_list[x]])
                 #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
                 seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_1,(tlblX_list[min_index_list[x]],tlblY_list[min_index_list[x]])), dist.euclidean(seed_endpoint_1,(trbrX_list[min_index_list[x]],trbrY_list[min_index_list[x]]))))
             elif seed_endpoint_validation_number == 2 :
-                seed_correspond_microtubules_width.append(dA_list[min_index_list[x]])
                 #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
                 seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_2,(tlblX_list[min_index_list[x]],tlblY_list[min_index_list[x]])), dist.euclidean(seed_endpoint_1,(trbrX_list[min_index_list[x]],trbrY_list[min_index_list[x]]))))
 
@@ -506,7 +504,7 @@ def reject_outliers(data):
 
     # Save the data within 2 standard deviation
     for d in data_non_zero:
-        if (d>(u-1*s)) & (d<(u+1*s)):
+        if (d>(u-2*s)) & (d<(u+2*s)):
             data_filtered.append(d)
     
     return data_filtered
@@ -522,31 +520,96 @@ for m in Microtubules_Length_Concatenated_to_Seeds:
 Case_Microtubules_Delete_Outliers = reject_outliers(Case_Microtubules)
 
 # Scatter plot the length
-x = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
-y = np.array([Case_Microtubules_Delete_Outliers])
+x_frame_number = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
+y_microtubules_length_array = np.array([Case_Microtubules_Delete_Outliers])
 
-plt.scatter(x, y, s=5)
+plt.scatter(x_frame_number, y_microtubules_length_array, s=5)
 scatter_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Scatter_Image" %(select_microtubules_number)
 plt.savefig(scatter_image_save_path)
 #plt.show()
 
 # Transfer into array for further process
-x_l = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
-y_l = Case_Microtubules_Delete_Outliers
+x_frame_number_array = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
+y_microtubules_length = Case_Microtubules_Delete_Outliers
 
-# Use piecewise linear regression
-breakpoint_number = 7
+# Set the quantity of segmentations of linear regression piece
+breakpoint_number = 4
 
-my_pwlf = pwlf.PiecewiseLinFit(x_l, y_l)
+# Fit in the data
+my_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
 breaks = my_pwlf.fit(breakpoint_number)
-print(breaks)
 
-x_hat = np.linspace(x.min(), x.max(), 100)
-y_hat = my_pwlf.predict(x_hat)
+# Give the different linear regression breakpoints information
+breaks_int = []
+for bp_number in breaks:
+    breaks_int.append(round(bp_number))
 
+print(breaks_int)
+
+# Get the first derivative of the linear regressions
+slopes = my_pwlf.calc_slopes()
+
+# Make the linear regression prediction
+x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
+y_microtubules_length_hat = my_pwlf.predict(x_frame_number_hat)
+
+# Draw and save the piecewise linear regression image
 plt.figure()
-plt.plot(x, y, markersize = 2, marker = 'o')
-plt.plot(x_hat, y_hat, '-')
+plt.plot(x_frame_number, y_microtubules_length_array, markersize = 2, marker = 'o')
+plt.plot(x_frame_number_hat, y_microtubules_length_hat, '-')
 pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Linear_Regressioin" %(select_microtubules_number)
 plt.savefig(pwlf_image_save_path)
 #plt.show()
+
+
+# The following code is to detect and calculate small events
+# Calculate the intervals between breakpoints
+breaks_length = []
+for b in range(len(breaks_int)-1):
+    the_length = breaks_int[b+1] - breaks_int[b]
+    breaks_length.append(the_length)
+
+print(breaks_length)
+
+# Separate the data according to the breakpoints intervals
+def unequal_divide(iterable, chunks):
+    it = iter(iterable)
+    return [list(islice(it, c)) for c in chunks]
+
+y_events_microtubules_length = unequal_divide(y_microtubules_length, breaks_length)
+
+
+# Use piecewise linear regression in small events
+def separate_small_event(small_event_separate_number):
+
+    # Select small event
+    small_event_separate = small_event_separate_number
+
+    # Make a x-axis number array
+    x_small_event_frame_number_array = np.array([np.arange(0, breaks_length[small_event_separate])])
+    y_small_event_microtubules_length = y_events_microtubules_length[small_event_separate]
+
+    # Define how many breakpoint in the small event
+    small_event_breakpoint_number = 3
+
+    # Fit the small events data into piecewise linear regression function
+    small_event_my_pwlf = pwlf.PiecewiseLinFit(x_small_event_frame_number_array, y_small_event_microtubules_length)
+    small_event_breaks = small_event_my_pwlf.fit(small_event_breakpoint_number)
+
+    # Get the slope
+    small_event_slopes = small_event_my_pwlf.calc_slopes()
+    print("The slopes in small event: ",small_event_slopes)
+
+    # Make the small event prediction
+    x_small_event_frame_number_hat = np.linspace(x_small_event_frame_number_array.min(), x_small_event_frame_number_array.max(), 10000)
+    y_small_event_microtubules_length_hat = small_event_my_pwlf.predict(x_small_event_frame_number_hat)
+
+    # Draw and save the small event piecewise linear regression image
+    plt.figure()
+    plt.plot(x_small_event_frame_number_array, np.array([y_small_event_microtubules_length]), markersize = 2, marker = 'o')
+    plt.plot(x_small_event_frame_number_hat, y_small_event_microtubules_length_hat, '-')
+    small_event_pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Number_%d_Lengths_Linear_Regressioin" %(select_microtubules_number, small_event_separate)
+    plt.savefig(small_event_pwlf_image_save_path)
+
+# Run the small event separation if necessary
+separate_small_event(3)
