@@ -55,7 +55,7 @@ Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF
 
 2. Put ND2 video into folder "Microtubules_Detection-master/Data_Process/ND2_Video/", and seeds ND2 file into folder "Microtubules_Detection-master/Data_Process/ND2_Seeds/".
 
-3. Run ND2_File_Decomposition.py in folder "Microtubules_Detection-master/Data_Process/"
+3. Run ND2_File_Decomposition.py in folder "Microtubules_Detection-master/Data_Process/".(You can adjust contrast and brightness depand on the input data)
 
 4. Run Duplicate_Data_to_Implementation_Input_Folder.py in folder "Microtubules_Detection-master/Data_Process/"
 
