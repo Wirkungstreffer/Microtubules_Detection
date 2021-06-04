@@ -90,9 +90,21 @@ def load_and_predict(implementation_input_file, trained_model):
         
       # Read the images as RGB mode
       implementation_img = cv2.imread(s, cv2.IMREAD_COLOR)
+      
+      # Get the image size
+      image_size_x = implementation_img.shape[0]
+      image_size_y = implementation_img.shape[1]
 
-      # Use reflect padding the images into size 1216x1216
-      implementation_reflect_img = cv2.copyMakeBorder(implementation_img,8,8,8,8,cv2.BORDER_REFLECT)       
+      # Calculate the compensate pixels to make image 32 divisible
+      compensate_x = int(image_size_x/32+1)*32 - image_size_x
+      compensate_y = int(image_size_y/32+1)*32 - image_size_y
+
+      # Use reflect padding the images into 32 divisible size
+      implementation_reflect_img = cv2.copyMakeBorder(implementation_img,0,compensate_x,0,compensate_y,cv2.BORDER_REFLECT)
+
+      # Store the compensated image size
+      expanded_size_x =  implementation_reflect_img.shape[0]
+      expanded_size_y =  implementation_reflect_img.shape[1]     
       
       # Add up into implementation images list 
       implementation_inputs.append(implementation_reflect_img)
@@ -107,10 +119,10 @@ def load_and_predict(implementation_input_file, trained_model):
       implementation_prediction = implementation_model.predict(implementation_reflect_img)
 
       # Reshape the array into image
-      implementation_prediction_image = implementation_prediction.reshape(1216,1216)
+      implementation_prediction_image = implementation_prediction.reshape(expanded_size_x, expanded_size_y)
 
       # Crop the output image into the original size
-      implementation_prediction_image_cropped = implementation_prediction_image[8:1208, 8:1208]
+      implementation_prediction_image_cropped = implementation_prediction_image[0:image_size_x, 0:image_size_y]
 
       # Add up into prediction list
       implementation_outputs.append(implementation_prediction_image_cropped)

@@ -279,7 +279,7 @@ for image in array_of_predict_input_image:
     for c in cnts:
         
         # if it's too small, it might be noise, just ignore it
-        if cv2.contourArea(c) < 10:
+        if cv2.contourArea(c) < 5:
             continue
 
         # Get the copy for later draw function
@@ -435,7 +435,7 @@ for image in array_of_predict_input_image:
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
         #cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
-        #cv2.putText(orignal_composite, "{:.1f}".format(seed_dA_list[j]), (int(seed_tltrX_list[j] - 15), int(seed_tltrY_list[j] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 255, 255), 2)
+        cv2.putText(orignal_composite, "NO{:d}".format(j+1), (int(seed_tltrX_list[j] - 15), int(seed_tltrY_list[j] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (0, 255, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
         cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
         cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
@@ -524,7 +524,7 @@ def reject_outliers(data):
     return data_filtered
 
 # Select on microtubules to verify
-select_microtubules_number = 44
+select_microtubules_number = 13
 
 Case_Microtubules = []
 for m in Microtubules_Length_Concatenated_to_Seeds:
@@ -538,6 +538,9 @@ x_frame_number = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
 y_microtubules_length_array = np.array([Case_Microtubules_Delete_Outliers])
 
 plt.scatter(x_frame_number, y_microtubules_length_array, s=5)
+plt.xlabel("Frame")
+plt.ylabel("Microtubules Length")
+plt.title("Number_%s_Microtubules_Lengths_Scatter_Image"%(select_microtubules_number))
 scatter_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Scatter_Image" %(select_microtubules_number)
 plt.savefig(scatter_image_save_path)
 #plt.show()
@@ -547,7 +550,7 @@ x_frame_number_array = np.array([np.arange(0,len(Case_Microtubules_Delete_Outlie
 y_microtubules_length = Case_Microtubules_Delete_Outliers
 
 # Set the quantity of segmentations of linear regression piece
-breakpoint_number = 4
+breakpoint_number = 5
 
 # Fit in the data
 my_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
@@ -558,11 +561,27 @@ breaks_int = []
 for bp_number in breaks:
     breaks_int.append(round(bp_number))
 
-print("The break points position: ",breaks_int)
+#print("The break points position: ",breaks_int)
 
 # Get the first derivative of the linear regressions
 slopes = my_pwlf.calc_slopes()
-print("The slopes: ",slopes)
+#print("The orginal slopes: ",slopes)
+
+# Use the scale proportion to get the rate
+frame_second_proportion = 5        # 5 sec per frame
+length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
+
+# Store the rate
+rate_list = []
+for slope in slopes:
+    rate = slope*(1/length_pixel_proportion)/frame_second_proportion
+    rate_list.append(rate)
+
+print("The rates: ",rate_list)
+
+rate_list_file_csv = open('Semantic_Segmentation/implementation/Number_%d_Microtubules_Rate_List.csv' %(select_microtubules_number),'w',newline='')
+rate_list_writer_csv = csv.writer(rate_list_file_csv)
+rate_list_writer_csv.writerow(rate_list)
 
 # Make the linear regression prediction
 x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
@@ -585,7 +604,7 @@ for b in range(len(breaks_int)-1):
     the_length = breaks_int[b+1] - breaks_int[b]
     breaks_length.append(the_length)
 
-print("The events length: ",breaks_length)
+#print("The events length: ",breaks_length)
 
 # Separate the data according to the breakpoints intervals
 def unequal_divide(iterable, chunks):
@@ -614,7 +633,23 @@ def separate_small_event(small_event_separate_number):
 
     # Get the slope
     small_event_slopes = small_event_my_pwlf.calc_slopes()
-    print("The slopes in small event: ",small_event_slopes)
+    #print("The original slopes in small event: ",small_event_slopes)
+
+    # Use the scale proportion to get the rate
+    frame_second_proportion = 5        # 5 sec per pixel
+    length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
+
+    # Store the rate
+    small_event_rate_list = []
+    for slope in small_event_slopes:
+        rate = slope*(1/length_pixel_proportion)/frame_second_proportion
+        small_event_rate_list.append(rate)
+
+    print("The rates in small event: ",small_event_rate_list)
+
+    rate_list_file_csv = open('Semantic_Segmentation/implementation/Number_%s_Microtubules_Number_%d_Small_Event_Rate_List.csv'%(select_microtubules_number, small_event_separate),'w',newline='')
+    rate_list_writer_csv = csv.writer(rate_list_file_csv)
+    rate_list_writer_csv.writerow(small_event_rate_list)
 
     # Make the small event prediction
     x_small_event_frame_number_hat = np.linspace(x_small_event_frame_number_array.min(), x_small_event_frame_number_array.max(), 10000)
@@ -627,8 +662,8 @@ def separate_small_event(small_event_separate_number):
     plt.title("Number_%s_Microtubules_Number_%d_Small_Event_Lengths_Linear_Regressioin" %(select_microtubules_number, small_event_separate))
     plt.plot(x_small_event_frame_number_array, np.array([y_small_event_microtubules_length]), markersize = 2, marker = 'o')
     plt.plot(x_small_event_frame_number_hat, y_small_event_microtubules_length_hat, '-')
-    small_event_pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Number_%d_Lengths_Linear_Regressioin" %(select_microtubules_number, small_event_separate)
+    small_event_pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Number_%d_Small_Event_Lengths_Linear_Regressioin" %(select_microtubules_number, small_event_separate)
     plt.savefig(small_event_pwlf_image_save_path)
 
 # Run the small event separation if necessary
-#separate_small_event(3)
+#separate_small_event(2)
