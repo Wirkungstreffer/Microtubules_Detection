@@ -33,7 +33,7 @@ Guide:
 
 1. Clone repository
 
-2. Download data from the link https://drive.google.com/file/d/1lGBidoPvOS4NNZUAArCJNOjuyDw_x_bH/view?usp=sharing
+2. Download data from the link: https://drive.google.com/file/d/1lGBidoPvOS4NNZUAArCJNOjuyDw_x_bH/view?usp=sharing
 
 3. Extract the data, move the images in folder "images" to the repository folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/images",
 move the labels in folder "labels" to the repository folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/labels".
@@ -59,9 +59,13 @@ Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF
 
 4. Run Duplicate_Data_to_Implementation_Input_Folder.py in folder "Microtubules_Detection-master/Data_Process/"
 
-2. Run Implementation_Prediction.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
+5. Run Implementation_Prediction.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
 
-3. Run Length_Measurement.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
+6. Run Length_Measurement.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
+
+7. Run Automatic_Linear_Regression.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
+
+(Optional) 8. Run Manually_Linear_Regression_Correction.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/" if the automatic detected linear regressions are inaccurate.
 
 #############################################################################################
 
