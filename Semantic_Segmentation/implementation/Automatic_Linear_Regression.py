@@ -1,0 +1,243 @@
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot as plt
+import pwlf
+import csv
+
+
+#### This script is to read the lengths of microtubules and return microtubules velocities ####
+#### The input is the csv file "implementation/Microtubules_Lengths_with_Seed_Concatenation"####
+#### Output of lengths information will be stored as csv file and some additional images to visualize the linear regressions ####
+
+# Read the csv file
+data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Microtubules_Lengths_with_Seed_Concatenation.csv")
+
+# Define a function to select non-zero column
+def select_non_zero_column(column):
+    # Create a list to store selected column
+    column_non_zero = []
+    
+    # Filter all the zeros
+    for non_zero in column:
+        if non_zero != 0:
+            column_non_zero.append(non_zero)
+
+    return column_non_zero
+
+# Create a list to store the non-zero column index
+non_zero_columns_index = []
+
+# Keep the non-zero columns
+for column_loop in range(data_length_csv.shape[1]):
+    # Filter out Zero columns
+    column_validation = select_non_zero_column(data_length_csv[data_length_csv.columns[column_loop]])
+    
+    # Filter out the falsh & miss detected column
+    if len(column_validation) >= 0.4*data_length_csv.shape[0]:
+        non_zero_columns_index.append(column_loop) 
+
+# Create a list to store rate information
+total_rate_list = []
+
+
+for column_number in non_zero_columns_index:
+    
+    # Read the non-zero column
+    the_column = data_length_csv[data_length_csv.columns[column_number]]
+
+    # Define a function that eliminate outliers 
+    def reject_outliers(data):
+        # Create a list to store filtered data
+        data_filtered = []
+        data_non_zero = []
+        
+        # Caculate mean and variance of the data
+        for n_z in data:
+            if n_z != 0:
+                data_non_zero.append(n_z)
+
+        u = np.mean(data_non_zero)
+        s = np.std(data_non_zero)
+
+        # Save the data within 2 standard deviation
+        for d in data_non_zero:
+            if (d>(u-2*s)) & (d<(u+2*s)):
+                data_filtered.append(d)
+        
+        return data_filtered
+
+    # Delete outliers
+    Case_Microtubules_Delete_Outliers = reject_outliers(the_column)
+
+
+    # Scatter plot the length
+    x_frame_number = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
+    y_microtubules_length_array = np.array([Case_Microtubules_Delete_Outliers])
+
+    length_array = y_microtubules_length_array[0]
+
+    # Transfer into array for further process
+    x_frame_number_array = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
+    y_microtubules_length = Case_Microtubules_Delete_Outliers
+
+    # Define the local with neighbor number
+    local_number = int(len(y_microtubules_length)*0.1)
+
+    # Create local extreme index list
+    minimal_index = []
+    maximal_index = []
+
+    # Count the local extreme number
+    minimal_counter = 0
+    maximal_counter = 0
+
+    # Find the local peaks & trough
+    for extreme_index in range(local_number, len(length_array)-local_number):
+
+        # Create a list to store local neighbor
+        local_list = []
+
+        # Save local neighbot length as list
+        for local_loop in range(1, local_number):
+            previous_length_number = length_array[extreme_index-local_loop]
+            local_list.append(previous_length_number)
+            followed_length_number = length_array[extreme_index+local_loop]
+            local_list.append(followed_length_number)
+
+        # If the length is the largest among all neighbors, it's local maximal
+        if length_array[extreme_index] >= max(local_list) :
+            maximal_index.append(extreme_index)
+            maximal_counter = maximal_counter + 1
+
+        # If the length is the shortest among all neighbors, it's local minimal
+        if length_array[extreme_index] <= min(local_list):
+            minimal_index.append(extreme_index)
+            minimal_counter = minimal_counter + 1
+
+    # Get the local extreme length information
+    local_extreme_max_length = []
+    local_extreme_min_length = []
+
+    for max_length in maximal_index:
+        local_extreme_max_length.append(length_array[max_length])
+
+    for min_length in minimal_index:
+        local_extreme_min_length.append(length_array[min_length])
+
+    # Delete the equal length to get correct local extreme counter number
+    equal_max_length = len(local_extreme_max_length) - len(set(local_extreme_max_length))
+    equal_min_length = len(local_extreme_min_length) - len(set(local_extreme_min_length))
+
+    equal_length_number = equal_max_length + equal_min_length
+
+    # Create local maximal mask for further visulizaiton & process
+    extreme_max_mask = []
+
+    for extreme_max_log in range(len(length_array)):
+        if any(extreme_max_log == index for index in maximal_index):
+            extreme_max_mask.append(True)
+        else :
+            extreme_max_mask.append(False)
+
+    # Create local minimal mask for further visulizaiton & process
+    extreme_min_mask = []
+
+    for extreme_min_log in range(len(length_array)):
+        if any(extreme_min_log == index for index in minimal_index):
+            extreme_min_mask.append(True)
+        else :
+            extreme_min_mask.append(False)
+
+    # Get the extreme value mask
+    extreme_mask = []
+
+    for extreme_log in range(len(length_array)):
+        extreme_mask.append(extreme_max_mask[extreme_log] or extreme_min_mask[extreme_log])
+
+    # Get the normal nonextreme value mask
+    nonextreme_mask = np.logical_not(extreme_mask)
+
+    # Add up totall local extreme value quantity 
+    total_local_extreme_number = minimal_counter + maximal_counter - equal_length_number
+
+    print("The total local extreme quantity of NO.%d is: "%(column_number+1),total_local_extreme_number)
+
+    # Set the quantity of segmentations of linear regression piece
+    breakpoint_number = total_local_extreme_number  + 1
+
+    print("The breakpoint of NO.%d is:"%(column_number+1),breakpoint_number)
+
+    # Fit in the data
+    my_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
+    breaks = my_pwlf.fit(breakpoint_number)
+
+    # Give the different linear regression breakpoints information
+    breaks_int = []
+    for bp_number in breaks:
+        breaks_int.append(round(bp_number))
+
+    # Get the first derivative of the linear regressions
+    slopes = my_pwlf.calc_slopes()
+    #print("The orginal slopes: ",slopes)
+
+    # Use the scale proportion to get the rate
+    frame_second_proportion = 5        # 5 sec per frame
+    length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
+
+    # Store the rate
+    rate_list = []
+    for slope in slopes:
+        rate = slope*(1/length_pixel_proportion)/frame_second_proportion
+        rate_list.append(rate)
+
+    print("The rates of NO.%d: "%(column_number+1),rate_list)
+
+    total_rate_list.append(rate_list)
+
+    # Make the linear regression prediction
+    x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
+    y_microtubules_length_hat = my_pwlf.predict(x_frame_number_hat)
+
+
+    # Draw and save the piecewise linear regression image
+    #plt.plot(x_frame_number, y_microtubules_length_array, markersize = 2, marker = 'o',color='gold')
+    plt.scatter(x_frame_number.reshape(-1, 1)[nonextreme_mask], y_microtubules_length_array.reshape(-1, 1)[nonextreme_mask], color='blue', marker='.', label='Nonextreme')
+    plt.scatter(x_frame_number.reshape(-1, 1)[extreme_min_mask], y_microtubules_length_array.reshape(-1, 1)[extreme_min_mask], color='red', marker='.', label='Local Minimal')
+    plt.scatter(x_frame_number.reshape(-1, 1)[extreme_max_mask], y_microtubules_length_array.reshape(-1, 1)[extreme_max_mask], color='gold', marker='.', label='Local Maximal')
+    plt.plot(x_frame_number_hat, y_microtubules_length_hat, '-')
+    plt.legend(loc='lower right')
+    plt.xlabel("Frame")
+    plt.ylabel("Microtubules Length")
+    plt.title("Number_%s_Microtubules_Lengths_Linear_Regressioin"%(column_number+1))
+    pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Linear_Regressioin" %(column_number+1)
+    plt.savefig(pwlf_image_save_path)
+    plt.clf()
+
+# Define a sublist expand function to expand the zipped data
+def expand(lst):
+    try:
+        for a in lst:
+            for b in expand(a):
+                yield b
+    except TypeError:
+        yield lst
+
+# Column index and seed index have the differ of 1 
+index_correspond_number = []
+for index in non_zero_columns_index:
+    index_correspond_number.append(index + 1)
+
+# Zip the column index with corresponding slope/rate information
+rate_information = list(zip(index_correspond_number, total_rate_list))
+
+# Expand the zipped data
+rate_list_prepare_csv = []
+for info in range(len(rate_information)):
+    rate_list_prepare_csv.append(expand(rate_information[info]))
+
+# Store the rates information in to csv file
+rate_list_file_csv = open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','w',newline='')
+rate_list_writer_csv = csv.writer(rate_list_file_csv)
+for row in rate_list_prepare_csv:
+    rate_list_writer_csv.writerow(row)
+
