@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pwlf
 import csv
+from sklearn import linear_model
 
 
 #### This script is to read the lengths of microtubules and return microtubules velocities information ####
@@ -161,25 +162,75 @@ for column_number in non_zero_columns_index:
     # Add up totall local extreme value quantity 
     total_local_extreme_number = minimal_counter + maximal_counter - equal_length_number
 
-    print("The total local extreme quantity of NO.%d is: "%(column_number+1),total_local_extreme_number)
+    print("The total local extreme quantity of NO.%d seed corresponding microtubule is: "%(column_number+1),total_local_extreme_number)
 
     # Set the quantity of segmentations of linear regression piece
     breakpoint_number = total_local_extreme_number  + 1
 
-    print("The breakpoint of NO.%d is:"%(column_number+1),breakpoint_number)
+    # If the data is monotonically increasing, use random sample consensus to get the slope
+    if breakpoint_number == 1:
+        
+        # Reshape data to the algorithm input format
+        X = x_frame_number.reshape(-1, 1) 
+        y = y_microtubules_length_array.reshape(-1, 1)
 
-    # Fit in the data
-    my_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
-    breaks = my_pwlf.fit(breakpoint_number)
+        # Robustly fit linear model with RANSAC algorithm
+        ransac = linear_model.RANSACRegressor()
+        ransac.fit(X, y)
+        inlier_mask = ransac.inlier_mask_
+        outlier_mask = np.logical_not(inlier_mask)
 
-    # Give the different linear regression breakpoints information
-    breaks_int = []
-    for bp_number in breaks:
-        breaks_int.append(round(bp_number))
+        # Predict data of estimated models
+        line_X = np.arange(X.min(), X.max())[:, np.newaxis]
+        line_y_ransac = ransac.predict(line_X)
 
-    # Get the first derivative of the linear regressions
-    slopes = my_pwlf.calc_slopes()
-    #print("The orginal slopes: ",slopes)
+        # Get the slope
+        slopes = ransac.estimator_.coef_[0]
+
+        # Draw and save the piecewise linear regression image
+        plt.scatter(X[inlier_mask], y[inlier_mask], color='yellowgreen', marker='.', label='Inliers')
+        plt.scatter(X[outlier_mask], y[outlier_mask], color='gold', marker='.', label='Outliers')
+        plt.plot(line_X, line_y_ransac, color='cornflowerblue', linewidth=2,label='RANSAC regressor')
+        plt.legend(loc='lower right')
+        plt.xlabel("Frame")
+        plt.ylabel("Microtubules Length")
+        plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number+1))
+        pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
+        plt.savefig(pwlf_image_save_path)
+        plt.clf()
+
+    elif breakpoint_number > 1: 
+        # Fit in the data
+        my_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
+        breaks = my_pwlf.fit(breakpoint_number)
+
+        # Give the different linear regression breakpoints information
+        breaks_int = []
+        for bp_number in breaks:
+            breaks_int.append(round(bp_number))
+
+        # Get the first derivative of the linear regressions
+        slopes = my_pwlf.calc_slopes()
+
+        # Make the linear regression prediction
+        x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
+        y_microtubules_length_hat = my_pwlf.predict(x_frame_number_hat)
+
+        # Draw and save the piecewise linear regression image
+        #plt.plot(x_frame_number, y_microtubules_length_array, markersize = 2, marker = 'o',color='gold')
+        plt.scatter(x_frame_number.reshape(-1, 1)[nonextreme_mask], y_microtubules_length_array.reshape(-1, 1)[nonextreme_mask], color='blue', marker='.', label='Nonextreme')
+        plt.scatter(x_frame_number.reshape(-1, 1)[extreme_min_mask], y_microtubules_length_array.reshape(-1, 1)[extreme_min_mask], color='red', marker='.', label='Local Minimal')
+        plt.scatter(x_frame_number.reshape(-1, 1)[extreme_max_mask], y_microtubules_length_array.reshape(-1, 1)[extreme_max_mask], color='gold', marker='.', label='Local Maximal')
+        plt.plot(x_frame_number_hat, y_microtubules_length_hat, '-')
+        plt.legend(loc='lower right')
+        plt.xlabel("Frame")
+        plt.ylabel("Microtubules Length")
+        plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number+1))
+        pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
+        plt.savefig(pwlf_image_save_path)
+        plt.clf()
+
+    print("The breakpoint of NO.%d seed corresponding microtubule is:"%(column_number+1),breakpoint_number)
 
     # Use the scale proportion to get the rate
     frame_second_proportion = 5        # 5 sec per frame
@@ -191,28 +242,10 @@ for column_number in non_zero_columns_index:
         rate = slope*(1/length_pixel_proportion)/frame_second_proportion
         rate_list.append(rate)
 
-    print("The rates of NO.%d: "%(column_number+1),rate_list)
+    print("The rates of NO.%d seed corresponding microtubule: "%(column_number+1),rate_list)
 
     total_rate_list.append(rate_list)
 
-    # Make the linear regression prediction
-    x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
-    y_microtubules_length_hat = my_pwlf.predict(x_frame_number_hat)
-
-
-    # Draw and save the piecewise linear regression image
-    #plt.plot(x_frame_number, y_microtubules_length_array, markersize = 2, marker = 'o',color='gold')
-    plt.scatter(x_frame_number.reshape(-1, 1)[nonextreme_mask], y_microtubules_length_array.reshape(-1, 1)[nonextreme_mask], color='blue', marker='.', label='Nonextreme')
-    plt.scatter(x_frame_number.reshape(-1, 1)[extreme_min_mask], y_microtubules_length_array.reshape(-1, 1)[extreme_min_mask], color='red', marker='.', label='Local Minimal')
-    plt.scatter(x_frame_number.reshape(-1, 1)[extreme_max_mask], y_microtubules_length_array.reshape(-1, 1)[extreme_max_mask], color='gold', marker='.', label='Local Maximal')
-    plt.plot(x_frame_number_hat, y_microtubules_length_hat, '-')
-    plt.legend(loc='lower right')
-    plt.xlabel("Frame")
-    plt.ylabel("Microtubules Length")
-    plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number+1))
-    pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
-    plt.savefig(pwlf_image_save_path)
-    plt.clf()
 
 # Define a sublist expand function to expand the zipped data
 def expand(lst):
