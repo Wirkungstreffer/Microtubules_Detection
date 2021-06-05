@@ -65,7 +65,7 @@ Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF
 
 7. Run Automatic_Linear_Regression.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
 
-(Optional) 8. Run Manually_Linear_Regression_Correction.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/" if the automatic detected linear regressions are inaccurate.
+  (Optional) 8. Run Manually_Linear_Regression_Correction.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/" if the automatic detected linear regressions are inaccurate.
 
 #############################################################################################
 
