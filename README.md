@@ -69,4 +69,4 @@ Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF
 
 #############################################################################################
 
-To transfer json file to image data, use console cd to the file, run $sh json_to_dataset.sh
+To transfer json file to image data, use console cd to the file directory, further run shell command $sh json_to_dataset.sh
