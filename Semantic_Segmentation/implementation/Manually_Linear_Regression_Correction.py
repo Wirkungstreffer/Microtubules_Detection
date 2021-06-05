@@ -6,14 +6,19 @@ import csv
 from itertools import islice
 
 
+#### This script is to manually correct rates information and return calibarated microtubules velocities information ####
+#### The input is the csv file "implementation/Microtubules_Lengths_with_Seed_Concatenation" ####
+#### Output of corrected microtubules rates information and corrected visualize images will replace corresponding old information ####
 
 
-#
-column_number = 14
+# Input the manually correction seeds number and breakpoints number
+correct_NO = 14
 correct_breakpoint_number = 7
 
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Microtubules_Lengths_with_Seed_Concatenation.csv")
+
+column_number = correct_NO
 
 the_column = data_length_csv[data_length_csv.columns[column_number-1]]
 
@@ -165,20 +170,10 @@ for slope in slopes:
 
 print("The rates of NO.%d: "%(column_number),rate_list)
 
-
 # Zip the column index with corresponding slope/rate information
 rate_information = list([column_number]) + list(rate_list)
 
-# Store the rates information in to csv file
-#rate_list_file_csv = open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','w',newline='')
-#rate_list_writer_csv = csv.writer(rate_list_file_csv)
-#rate_list_writer_csv.writerow(rate_information)
-
-#with open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','a') as data_frame:
-#    writer = csv.writer(data_frame)
-#    writer.writerow(rate_information)
-
-# Read the csv file
+# Read the old rate csv file
 first_column = []    
 rate_csv = open ('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','r')
 rate_data = csv.reader(rate_csv)
@@ -186,19 +181,40 @@ for column in rate_data:
     if column:
         first_column.append(int(column[0]))
 
-print(first_column)
+# Store the old rate information into list
+total_rate_information = []
+with open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv') as df:
+    for row in csv.reader(df, skipinitialspace=True):
+        total_rate_information.append(row)
 
-list2 = []
-with open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv') as f:
-    for row in f:
-        list2.append(row.split()[0])
+# Drop out the quote in the data
+without_quote_data = []
+for info in total_rate_information:
+    without_quote =  list(map(float, info))
+    without_quote[0] = int(without_quote[0])
+    without_quote_data.append(without_quote)
 
-print(list2)
+# Delete the selected old rate data
+without_quote_data[:] = [row for row in without_quote_data  if correct_NO != row[0]]
+
+# Store the data into list
+delete_old_rate_csv = []
+for delete in range(len(without_quote_data)):
+    delete_old_rate_csv.append(without_quote_data[delete])
+
+# Add the new corrected rates information into list
+delete_old_rate_csv.append(rate_information)
+
+# Store the deleted old rates information in to csv file
+rate_list_writer_csv = open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','w',newline='')
+rate_list_writer_csv = csv.writer(rate_list_writer_csv)
+for rows in delete_old_rate_csv:
+    rate_list_writer_csv.writerow(rows)
+
 
 # Make the linear regression prediction
 x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
 y_microtubules_length_hat = my_pwlf.predict(x_frame_number_hat)
-
 
 # Draw and save the piecewise linear regression image
 #plt.plot(x_frame_number, y_microtubules_length_array, markersize = 2, marker = 'o',color='gold')
@@ -209,8 +225,8 @@ plt.plot(x_frame_number_hat, y_microtubules_length_hat, '-')
 plt.legend(loc='lower right')
 plt.xlabel("Frame")
 plt.ylabel("Microtubules Length")
-plt.title("Number_%s_Microtubules_Lengths_Linear_Regressioin"%(column_number))
-pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Linear_Regressioin" %(column_number)
+plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number))
+pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number)
 plt.savefig(pwlf_image_save_path)
 plt.clf()
 

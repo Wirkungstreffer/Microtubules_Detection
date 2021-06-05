@@ -5,9 +5,10 @@ import pwlf
 import csv
 
 
-#### This script is to read the lengths of microtubules and return microtubules velocities ####
-#### The input is the csv file "implementation/Microtubules_Lengths_with_Seed_Concatenation"####
-#### Output of lengths information will be stored as csv file and some additional images to visualize the linear regressions ####
+#### This script is to read the lengths of microtubules and return microtubules velocities information ####
+#### The input is the csv file "implementation/Microtubules_Lengths_with_Seed_Concatenation" ####
+#### Output of microtubules rates information will be stored as csv file and some additional images to visualize the linear regressions ####
+
 
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Microtubules_Lengths_with_Seed_Concatenation.csv")
@@ -70,13 +71,13 @@ for column_number in non_zero_columns_index:
     Case_Microtubules_Delete_Outliers = reject_outliers(the_column)
 
 
-    # Scatter plot the length
+    # Transfer data into array for further process
     x_frame_number = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
     y_microtubules_length_array = np.array([Case_Microtubules_Delete_Outliers])
 
     length_array = y_microtubules_length_array[0]
 
-    # Transfer into array for further process
+    # Keep the list form of original length data
     x_frame_number_array = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
     y_microtubules_length = Case_Microtubules_Delete_Outliers
 
@@ -208,8 +209,8 @@ for column_number in non_zero_columns_index:
     plt.legend(loc='lower right')
     plt.xlabel("Frame")
     plt.ylabel("Microtubules Length")
-    plt.title("Number_%s_Microtubules_Lengths_Linear_Regressioin"%(column_number+1))
-    pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Lengths_Linear_Regressioin" %(column_number+1)
+    plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number+1))
+    pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
     plt.savefig(pwlf_image_save_path)
     plt.clf()
 
