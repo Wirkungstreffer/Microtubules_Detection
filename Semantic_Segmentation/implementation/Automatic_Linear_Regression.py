@@ -17,17 +17,17 @@ data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Microtubules
 # Define a function to select non-zero column
 def select_non_zero_column(column):
     # Create a list to store selected column
-    column_non_zero = []
+    column_non_nan = []
     
     # Filter all the zeros
-    for non_zero in column:
-        if non_zero != 0:
-            column_non_zero.append(non_zero)
+    for non_nan in column:
+        if non_nan != -1:
+            column_non_nan.append(non_nan)
 
-    return column_non_zero
+    return column_non_nan
 
 # Create a list to store the non-zero column index
-non_zero_columns_index = []
+non_nan_columns_index = []
 
 # Keep the non-zero columns
 for column_loop in range(data_length_csv.shape[1]):
@@ -36,13 +36,13 @@ for column_loop in range(data_length_csv.shape[1]):
     
     # Filter out the falsh & miss detected column
     if len(column_validation) >= 0.4*data_length_csv.shape[0]:
-        non_zero_columns_index.append(column_loop) 
+        non_nan_columns_index.append(column_loop) 
 
 # Create a list to store rate information
 total_rate_list = []
 
 
-for column_number in non_zero_columns_index:
+for column_number in non_nan_columns_index:
     
     # Read the non-zero column
     the_column = data_length_csv[data_length_csv.columns[column_number]]
@@ -51,18 +51,18 @@ for column_number in non_zero_columns_index:
     def reject_outliers(data):
         # Create a list to store filtered data
         data_filtered = []
-        data_non_zero = []
+        data_non_nan = []
         
         # Caculate mean and variance of the data
         for n_z in data:
-            if n_z != 0:
-                data_non_zero.append(n_z)
+            if n_z != -1:
+                data_non_nan.append(n_z)
 
-        u = np.mean(data_non_zero)
-        s = np.std(data_non_zero)
+        u = np.mean(data_non_nan)
+        s = np.std(data_non_nan)
 
         # Save the data within 2 standard deviation
-        for d in data_non_zero:
+        for d in data_non_nan:
             if (d>(u-2*s)) & (d<(u+2*s)):
                 data_filtered.append(d)
         
@@ -258,7 +258,7 @@ def expand(lst):
 
 # Column index and seed index have the differ of 1 
 index_correspond_number = []
-for index in non_zero_columns_index:
+for index in non_nan_columns_index:
     index_correspond_number.append(index + 1)
 
 # Zip the column index with corresponding slope/rate information

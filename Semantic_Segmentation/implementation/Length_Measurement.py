@@ -8,8 +8,7 @@ from scipy.spatial import distance as dist
 from imutils import perspective
 import imutils
 import csv
-from itertools import islice
-import pwlf
+
 
 #### This script is to measure the lengths of microtubules and return the csv file recording the lengths information ####
 #### The input is images in 4 folder "implementation/input_image", "implementation/prediction_image", "implementation/prediction_seed" and "implementation/seed_image" ####
@@ -406,7 +405,7 @@ for image in array_of_predict_input_image:
         # Save the seed corresponding microtubules length information to the seed_correspond_microtubules lists
         for x in range(len(min_index_list)):
             if min_val_list[x] == len(tlblX_list) + 200 :
-                seed_correspond_microtubules_length.append(0)
+                seed_correspond_microtubules_length.append(-1)
             elif seed_endpoint_validation_number == 1 :
                 #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
                 seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_1,(tlblX_list[min_index_list[x]],tlblY_list[min_index_list[x]])), dist.euclidean(seed_endpoint_1,(trbrX_list[min_index_list[x]],trbrY_list[min_index_list[x]]))))
