@@ -67,6 +67,8 @@ Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF
 
 8. (Optional) Run Manually_Linear_Regression_Correction.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/" if the automatic detected linear regressions are inaccurate.
 
+All the output data is in the folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/data_output"
+
 #############################################################################################
 
 To transfer json file to image data, use console cd to the file directory, further run shell command $sh json_to_dataset.sh
