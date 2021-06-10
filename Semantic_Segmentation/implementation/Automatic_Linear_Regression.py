@@ -12,10 +12,10 @@ from sklearn import linear_model
 
 
 # Read the csv file
-data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Microtubules_Lengths_with_Seed_Concatenation.csv")
+data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
 
 # Define a function to select non-zero column
-def select_non_zero_column(column):
+def select_non_nan_column(column):
     # Create a list to store selected column
     column_non_nan = []
     
@@ -32,7 +32,7 @@ non_nan_columns_index = []
 # Keep the non-zero columns
 for column_loop in range(data_length_csv.shape[1]):
     # Filter out Zero columns
-    column_validation = select_non_zero_column(data_length_csv[data_length_csv.columns[column_loop]])
+    column_validation = select_non_nan_column(data_length_csv[data_length_csv.columns[column_loop]])
     
     # Filter out the falsh & miss detected column
     if len(column_validation) >= 0.4*data_length_csv.shape[0]:
@@ -41,11 +41,19 @@ for column_loop in range(data_length_csv.shape[1]):
 # Create a list to store rate information
 total_rate_list = []
 
-
 for column_number in non_nan_columns_index:
     
     # Read the non-zero column
     the_column = data_length_csv[data_length_csv.columns[column_number]]
+    
+    original_x_frame_number = np.array([np.arange(0,len(the_column))])
+    original_y_microtubules_length_array = np.array([the_column])
+
+    plt.scatter(original_x_frame_number, original_y_microtubules_length_array,marker='.')
+    original_image_save_path = "Semantic_Segmentation/implementation/data_output/NO.%s_Seed_Corresponding_Microtubules_Lengths_Scatter_Image.png" %(column_number+1)
+    plt.savefig(original_image_save_path)
+    plt.clf()
+    #plt.show()
 
     # Define a function that eliminate outliers 
     def reject_outliers(data):
@@ -195,7 +203,7 @@ for column_number in non_nan_columns_index:
         plt.xlabel("Frame")
         plt.ylabel("Microtubules Length")
         plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number+1))
-        pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
+        pwlf_image_save_path = "Semantic_Segmentation/implementation/data_output/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
         plt.savefig(pwlf_image_save_path)
         plt.clf()
 
@@ -226,7 +234,7 @@ for column_number in non_nan_columns_index:
         plt.xlabel("Frame")
         plt.ylabel("Microtubules Length")
         plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number+1))
-        pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
+        pwlf_image_save_path = "Semantic_Segmentation/implementation/data_output/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number+1)
         plt.savefig(pwlf_image_save_path)
         plt.clf()
 
@@ -270,7 +278,7 @@ for info in range(len(rate_information)):
     rate_list_prepare_csv.append(expand(rate_information[info]))
 
 # Store the rates information in to csv file
-rate_list_file_csv = open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','w',newline='')
+rate_list_file_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv','w',newline='')
 rate_list_writer_csv = csv.writer(rate_list_file_csv)
 for row in rate_list_prepare_csv:
     rate_list_writer_csv.writerow(row)

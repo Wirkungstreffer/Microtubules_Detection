@@ -28,3 +28,6 @@ os.mkdir("Semantic_Segmentation/implementation/prediction_seed/")
 
 shutil.rmtree("Semantic_Segmentation/implementation/seed_image/")
 os.mkdir("Semantic_Segmentation/implementation/seed_image/")
+
+shutil.rmtree("Semantic_Segmentation/implementation/data_output/")
+os.mkdir("Semantic_Segmentation/implementation/data_output/")

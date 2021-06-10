@@ -71,6 +71,12 @@ array_of_input_image = load_images(images_path, 3)
 array_of_predict_input_image = load_images(predict_image_path, 1)
 
 
+# Set data output path
+output_path = "Semantic_Segmentation/implementation/data_output/"
+
+if os.path.exists(output_path)==False:
+    os.makedirs(output_path)
+
 # Acquire seeds position and calculate length information 
 #########################################################################################################################
 
@@ -97,7 +103,7 @@ seed_image_noise_reduce = np.zeros((seed_labels.shape), np.uint8)
 for i in range(0, seed_nlabels - 1):
     
     # If the segmented area is large, consider it is not a noise segmentation
-    if seed_areas[i] >= 5:   
+    if seed_areas[i] >= 1:   
         seed_image_noise_reduce[seed_labels == i + 1] = 255
 
 # Get contours of segmentations
@@ -130,7 +136,7 @@ seed_endpoints_list = []
 for seed_c in seed_cnts:
     
     # if it's too small, it might be noise, just ignore it
-    if cv2.contourArea(seed_c) < 5:
+    if cv2.contourArea(seed_c) < 1:
         continue
 
     # Use minimal area rectangular to box the segmentation
@@ -454,28 +460,21 @@ print("In totall frame quantity: ",frame)
 
 # Create a list to store the lengths information
 Microtubules_Length_Concatenated_to_Seeds = []
-Microtubules_Width_Concatenated_to_Seeds = []
 
 # Read the microtubules length concatanated to corresponding seeds in each frame, save them as sublist of label sequence list
 for length in range(0,len(seed_correspond_microtubules_length),len(seed_endpoints_list)):
   length_group = seed_correspond_microtubules_length[length:length+len(seed_endpoints_list)]
   Microtubules_Length_Concatenated_to_Seeds.append(length_group)
 
-# Read the microtubules width concatanated to corresponding seeds in each frame, save them as sublist of label sequence list
-for width in range(0,len(seed_correspond_microtubules_width),len(seed_endpoints_list)):
-  width_group = seed_correspond_microtubules_width[width:width+len(seed_endpoints_list)]
-  Microtubules_Width_Concatenated_to_Seeds.append(width_group)
-
-
 # Store the information into csv file
-file_csv_1 = open('Semantic_Segmentation/implementation/Microtubules_Lengths_with_Seed_Concatenation.csv','w',newline='')
+file_csv_1 = open('Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv','w',newline='')
 writer_csv_1 = csv.writer(file_csv_1)
 for concatenate_lengths_per_frame in Microtubules_Length_Concatenated_to_Seeds:
     writer_csv_1.writerow(concatenate_lengths_per_frame)
 
 
 # Store the information into csv file
-file_csv_2 = open('Semantic_Segmentation/implementation/Microtubules_Lengths_without_Concatenation.csv','w',newline='')
+file_csv_2 = open('Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_without_Concatenation.csv','w',newline='')
 writer_csv_2 = csv.writer(file_csv_2)
 for lengths_per_frame in Length_Micotubulues:
     writer_csv_2.writerow(lengths_per_frame)
@@ -486,13 +485,12 @@ for lengths_per_frame in Length_Micotubulues:
 
 # Vedio parameters setting
 fps = 3
-size = (1200,1200)
+size = (seed_original.shape[0],seed_original.shape[1])
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
-videoWriter = cv2.VideoWriter('Semantic_Segmentation/implementation/Microtubules_Lengths_Measurement.avi',fourcc,fps,size)
+videoWriter = cv2.VideoWriter('Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_Measurement.avi',fourcc,fps,size)
 
 # Start to generate vedio
 for visualize_measurement_frame in visualize_measurements_images_list:
     videoWriter.write(visualize_measurement_frame)
 
 videoWriter.release()
-
