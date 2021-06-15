@@ -4,10 +4,12 @@ from cv2 import drawContours
 import os
 import numpy as np
 from matplotlib import pyplot as plt
+from numpy.lib.type_check import imag
 from scipy.spatial import distance as dist
 from imutils import perspective
 import imutils
 import csv
+from skimage import io
 
 
 #### This script is to measure the lengths of microtubules and return the csv file recording the lengths information ####
@@ -229,6 +231,10 @@ Length_Micotubulues = []
 # Visualize measurements images list
 visualize_measurements_images_list = []
 
+prediction_measurements_images_list = []
+
+overlapping_images_list = []
+
 # Measure the lengths of microtubules segmentation
 for image in array_of_predict_input_image:
 
@@ -279,6 +285,8 @@ for image in array_of_predict_input_image:
     dA_list = []
     dB_list = []
 
+    img_copy = image.copy()
+    
     # Loop for all contour
     for c in cnts:
         
@@ -286,8 +294,21 @@ for image in array_of_predict_input_image:
         if cv2.contourArea(c) < 5:
             continue
 
-        # Get the copy for later draw function
-        orig = image.copy()
+        epsilon = 0.15*cv2.arcLength(c,True)
+        approx = cv2.approxPolyDP(c,epsilon,True)
+        
+        if len(approx) >= 3:
+            if cv2.contourArea(c) < 200:
+                continue
+        
+            cv2.drawContours(img_copy, c, -1, (255, 255, 255), 3)
+            cv2.drawContours(img_copy, approx, -1, (255, 255, 255), 3)
+
+            cv2.imshow('img',img_copy)
+            cv2.waitKey(0)
+
+            # Add the visualized measurement to the list
+            overlapping_images_list.append(img_copy)
 
         # Use minimal area rectangular to box the segmentation
         box = cv2.minAreaRect(c)
@@ -448,10 +469,40 @@ for image in array_of_predict_input_image:
 
     # Add the visualized measurement to the list
     visualize_measurements_images_list.append(orignal_composite)
-    
+
+    # Add seed image and microtubules prediction image
+    predict_add_img = cv2.add(predict_seed_image[0],image)
+
+    # Draw the length & width line and the number
+    predict_composite = predict_add_img.copy()
+    for k in range(len(tltrX_list)):
+        # Draw lines and informations of microtubules
+        #cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
+        #cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
+        #cv2.putText(orignal_composite, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 255), 2)
+        #cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
+        cv2.circle(predict_composite, (int(tltrX_list[k]), int(tltrY_list[k])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(blbrX_list[k]), int(blbrY_list[k])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(tlblX_list[k]), int(tlblY_list[k])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(trbrX_list[k]), int(trbrY_list[k])), 2, (255, 255, 255), -1)
+
+    for l in range(len(seed_tltrX_list)):
+        # Draw lines and informations of microtubules
+        #cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
+        #cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
+        cv2.putText(predict_composite, "NO{:d}".format(l+1), (int(seed_tltrX_list[l] - 15), int(seed_tltrY_list[l] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (255, 255, 255), 2)
+        #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
+        cv2.circle(predict_composite, (int(seed_tltrX_list[l]), int(seed_tltrY_list[l])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(seed_blbrX_list[l]), int(seed_blbrY_list[l])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(seed_tlblX_list[l]), int(seed_tlblY_list[l])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(seed_trbrX_list[l]), int(seed_trbrY_list[l])), 2, (255, 255, 255), -1)
+
+    # Add the visualized measurement to the list
+    prediction_measurements_images_list.append(predict_composite)
+
     frame = frame + 1
 
-    #cv2.imshow("Measurement Visualization", orignal_composite)
+    #cv2.imshow("Measurement Visualization", predict_composite)
     #cv2.waitKey(0)
 
 print("In totall frame quantity: ",frame)
@@ -480,7 +531,7 @@ for lengths_per_frame in Length_Micotubulues:
     writer_csv_2.writerow(lengths_per_frame)
 
 
-# Generate vedio
+# Generate visualization tools
 #########################################################################################################################
 
 # Vedio parameters setting
@@ -494,3 +545,32 @@ for visualize_measurement_frame in visualize_measurements_images_list:
     videoWriter.write(visualize_measurement_frame)
 
 videoWriter.release()
+cv2.destroyAllWindows()
+
+# Set the seeds images and predictions saving path
+prediction_composite_path = "Semantic_Segmentation/implementation/data_output/prediction_composite"
+
+if os.path.exists(prediction_composite_path)==False:
+    os.makedirs(prediction_composite_path)
+
+# Save the predictions into the implementation_output folder
+for n in range(0, frame-1):
+  prediction_add = prediction_measurements_images_list[n]
+
+  # Change the names of prediction for recognition and further easy to load
+  implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
+  io.imsave(implementation_prediction_save_path, prediction_add)
+
+# Set the seeds images and predictions saving path
+overlapping_path = "Semantic_Segmentation/implementation/data_output/overlapping_image"
+
+if os.path.exists(overlapping_path)==False:
+    os.makedirs(overlapping_path)
+
+# Save the predictions into the implementation_output folder
+for m in range(0, len(overlapping_images_list)):
+  overlapping_image = overlapping_images_list[m]
+
+  # Change the names of prediction for recognition and further easy to load
+  overlapping_save_path = "%s/overlapping_frame_%s.png"% (overlapping_path, (m+1))
+  io.imsave(overlapping_save_path, overlapping_image)

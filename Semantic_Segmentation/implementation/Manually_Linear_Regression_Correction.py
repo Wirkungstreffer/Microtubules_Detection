@@ -13,12 +13,12 @@ from sklearn import linear_model
 
 
 # Input the manually correction seeds number 
-correct_NO = 32
+correct_NO = 20
 # Input the manually correct breakpoints number, please input the breakpoints number larger than 1
-correct_breakpoint_number = 3
+correct_breakpoint_number = 7
 
 # Read the csv file
-data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Microtubules_Lengths_with_Seed_Concatenation.csv")
+data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
 
 column_number = correct_NO
 
@@ -173,7 +173,7 @@ if breakpoint_number == 1:
     plt.xlabel("Frame")
     plt.ylabel("Microtubules Length")
     plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number))
-    pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number)
+    pwlf_image_save_path = "Semantic_Segmentation/implementation/data_output/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number)
     plt.savefig(pwlf_image_save_path)
     plt.clf()
 
@@ -204,7 +204,7 @@ elif breakpoint_number > 1:
     plt.xlabel("Frame")
     plt.ylabel("Microtubules Length")
     plt.title("NO.%s Seed Corresponding Microtubules Lengths Linear Regressioin"%(column_number))
-    pwlf_image_save_path = "Semantic_Segmentation/implementation/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number)
+    pwlf_image_save_path = "Semantic_Segmentation/implementation/data_output/NO.%s_Seed_Corresponding_Microtubules_Lengths_Linear_Regressioin.png" %(column_number)
     plt.savefig(pwlf_image_save_path)
     plt.clf()
 
@@ -227,7 +227,7 @@ rate_information = list([column_number]) + list(rate_list)
 
 # Read the old rate csv file
 first_column = []    
-rate_csv = open ('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','r')
+rate_csv = open ('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv','r')
 rate_data = csv.reader(rate_csv)
 for column in rate_data:
     if column:
@@ -235,7 +235,7 @@ for column in rate_data:
 
 # Store the old rate information into list
 total_rate_information = []
-with open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv') as df:
+with open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv') as df:
     for row in csv.reader(df, skipinitialspace=True):
         total_rate_information.append(row)
 
@@ -258,7 +258,7 @@ for delete in range(len(without_quote_data)):
 delete_old_rate_csv.append(rate_information)
 
 # Store the deleted old rates information in to csv file
-rate_list_writer_csv = open('Semantic_Segmentation/implementation/Microtubules_Rate_List.csv','w',newline='')
+rate_list_writer_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv','w',newline='')
 rate_list_writer_csv = csv.writer(rate_list_writer_csv)
 for rows in delete_old_rate_csv:
     rate_list_writer_csv.writerow(rows)
@@ -337,7 +337,7 @@ def separate_small_event(small_event_separate_number):
     plt.title("Number_%s_Microtubules_Number_%d_Small_Event_Lengths_Linear_Regressioin" %(column_number , small_event_separate))
     plt.plot(x_small_event_frame_number_array, np.array([y_small_event_microtubules_length]), markersize = 2, marker = 'o')
     plt.plot(x_small_event_frame_number_hat, y_small_event_microtubules_length_hat, '-')
-    small_event_pwlf_image_save_path = "Semantic_Segmentation/implementation/Number_%s_Microtubules_Number_%d_Small_Event_Lengths_Linear_Regressioin" %(column_number , small_event_separate)
+    small_event_pwlf_image_save_path = "Semantic_Segmentation/implementation/data_output/Number_%s_Microtubules_Number_%d_Small_Event_Lengths_Linear_Regressioin" %(column_number , small_event_separate)
     plt.savefig(small_event_pwlf_image_save_path)
 
 # Run the small event separation if necessary
