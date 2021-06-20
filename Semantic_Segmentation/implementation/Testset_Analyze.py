@@ -9,9 +9,9 @@ from sklearn import linear_model
 from scipy.ndimage import gaussian_filter1d
 
 # Read the csv file   Semantic_Segmentation/implementation/Testset_full_auto/Testset_Only_Labels/200818_xb_reaction2_6um003_testset/Ground_Truth
-cnn_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Only_Labels/200818_xb_reaction2_6um003_testset/CNN_Results/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
-label_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Only_Labels/200818_xb_reaction2_6um003_testset/Ground_Truth/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
-cnn_MT_label_seed_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Only_Labels/200818_xb_reaction2_6um003_testset/Ground_Truth_Seed_CNN_MT/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
+cnn_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200818_xb_reaction2_6um009_testset/CNN_Results/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
+label_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200818_xb_reaction2_6um009_testset/Ground_Truth/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
+cnn_MT_label_seed_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200818_xb_reaction2_6um009_testset/Ground_Truth_Seed_CNN_MT/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
 
 # Get data information
 cnn_row_number = cnn_data_length_csv.shape[0]
@@ -164,6 +164,8 @@ for column_loop_cnn_MT_label_seed in range(cnn_MT_label_seed_data_length_csv.sha
     if len(column_validation_cnn_MT_label_seed) >= 0.4*cnn_MT_label_seed_data_length_csv.shape[0]:
         non_nan_columns_index_cnn_MT_label_seed.append(column_loop_cnn_MT_label_seed+1)
 
+#non_nan_columns_index_cnn_MT_label_seed.remove(92)
+#non_nan_columns_index_cnn_MT_label_seed.remove(101)
 
 print("Ground truth successful concatenated seeds number list:",non_nan_columns_index_label)
 print("CNN detection successful concatenated seeds number list:",non_nan_columns_index_cnn_MT_label_seed)
@@ -184,6 +186,8 @@ for column_number in non_nan_columns_index_cnn_MT_label_seed:
     label_column = label_data_length_csv[label_data_length_csv.columns[column_number-1]]
 
     error_list = []
+
+    # Mark the TP, TN, FP, FN scenario
     for k in range(len(label_column)):
         if (cnn_MT_label_seed_column[k] != -1) & (label_column[k] != -1):
             error = abs(label_column[k] - cnn_MT_label_seed_column[k])
@@ -204,6 +208,10 @@ for column_number in non_nan_columns_index_cnn_MT_label_seed:
     total_error_list.append(error_list)
 
 
+# Calculate minimal, maximal, average error value of TP scenario. Count TN, FP, FN quantity
+Total_average_list = []
+Total_max_list = []
+
 for l in range(len(total_error_list)):
     FP_in_TP = 0
     FN_in_TP = 0
@@ -222,50 +230,93 @@ for l in range(len(total_error_list)):
     
     if (FP_in_TP != 0) & (FN_in_TP == 0) & (TN_in_TP == 0):
         the_errors = [err for err in total_error_list[l] if err >= 0]
+        
         column_error_min = min(the_errors)
+        
         column_error_max = max(the_errors)
+        Total_max_list.append(column_error_max)
+
         column_error_average =average(the_errors)
+        Total_average_list.append(column_error_average)
+        
         print("NO.%d seed corresponding MT:     min_err %f     max_err %f     avg_err %f     FP %d" %(non_nan_columns_index_cnn_MT_label_seed[l], column_error_min, column_error_max, column_error_average, FP_in_TP))
     
     elif (FP_in_TP != 0) & (FN_in_TP != 0) & (TN_in_TP == 0):
         the_errors = [err for err in total_error_list[l] if err >= 0]
         column_error_min = min(the_errors)
+        
         column_error_max = max(the_errors)
+        Total_max_list.append(column_error_max)
+
         column_error_average =average(the_errors)
+        Total_average_list.append(column_error_average)
+        
         print("NO.%d seed corresponding MT:     min_err %f     max_err %f     avg_err %f     FP %d     FN %d" %(non_nan_columns_index_cnn_MT_label_seed[l], column_error_min, column_error_max, column_error_average, FP_in_TP, FN_in_TP))
     
     elif (FP_in_TP != 0) & (FN_in_TP == 0) & (TN_in_TP != 0):
         the_errors = [err for err in total_error_list[l] if err >= 0]
         column_error_min = min(the_errors)
+        
         column_error_max = max(the_errors)
+        Total_max_list.append(column_error_max)
+
         column_error_average =average(the_errors)
+        Total_average_list.append(column_error_average)
+        
         print("NO.%d seed corresponding MT:     min_err %f     max_err %f     avg_err %f     FP %d     TN %d" %(non_nan_columns_index_cnn_MT_label_seed[l], column_error_min, column_error_max, column_error_average,  FP_in_TP, TN_in_TP))
     
     elif (FP_in_TP == 0) & (FN_in_TP != 0) & (TN_in_TP == 0):
         the_errors = [err for err in total_error_list[l] if err >= 0]
         column_error_min = min(the_errors)
+        
         column_error_max = max(the_errors)
+        Total_max_list.append(column_error_max)
+
         column_error_average =average(the_errors)
+        Total_average_list.append(column_error_average)
+        
         print("NO.%d seed corresponding MT:     min_err %f     max_err %f     avg_err %f     FN %d" %(non_nan_columns_index_cnn_MT_label_seed[l], column_error_min, column_error_max, column_error_average, FN_in_TP))
 
     elif (FP_in_TP == 0) & (FN_in_TP != 0) & (TN_in_TP != 0):
         the_errors = [err for err in total_error_list[l] if err >= 0]
         column_error_min = min(the_errors)
+        
         column_error_max = max(the_errors)
+        Total_max_list.append(column_error_max)
+
         column_error_average =average(the_errors)
+        Total_average_list.append(column_error_average)
+        
         print("NO.%d seed corresponding MT:     min_err %f     max_err %f     avg_err %f     FN %d     TN %d" %(non_nan_columns_index_cnn_MT_label_seed[l], column_error_min, column_error_max, column_error_average, FN_in_TP, TN_in_TP))
     
     elif (FP_in_TP != 0) & (FN_in_TP != 0) & (TN_in_TP != 0):
         the_errors = [err for err in total_error_list[l] if err >= 0]
         column_error_min = min(the_errors)
+        
         column_error_max = max(the_errors)
+        Total_max_list.append(column_error_max)
+
         column_error_average =average(the_errors)
+        Total_average_list.append(column_error_average)
+        
         print("NO.%d seed corresponding MT:     min_err %f     max_err %f     avg_err %f     FP %d     FN %d     TN %d" %(non_nan_columns_index_cnn_MT_label_seed[l], column_error_min, column_error_max, column_error_average, FP_in_TP, FN_in_TP, TN_in_TP ))
 
     elif (FP_in_TP == 0) & (FN_in_TP == 0) & (TN_in_TP == 0):
         the_errors = [err for err in total_error_list[l] if err >= 0]
         column_error_min = min(the_errors)
+        
         column_error_max = max(the_errors)
+        Total_max_list.append(column_error_max)
+
         column_error_average =average(the_errors)
+        Total_average_list.append(column_error_average)
+        
         print("NO.%d seed corresponding MT:     min_err %f     max_err %f     avg_err %f" %(non_nan_columns_index_cnn_MT_label_seed[l], column_error_min, column_error_max, column_error_average))
 
+# Calculate general average, maximal error value
+
+general_average = average(Total_average_list)
+general_max = max(Total_max_list)
+
+print("General average error: ", general_average)
+print("General maximal error: ", general_max)
