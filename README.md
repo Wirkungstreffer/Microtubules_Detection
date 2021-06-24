@@ -29,7 +29,7 @@ Training DeepLabCut could direct import conda env DLC.yaml
 
 #############################################################################################
 
-Guide:
+Neural network training guide:
 
 1. Clone repository
 
