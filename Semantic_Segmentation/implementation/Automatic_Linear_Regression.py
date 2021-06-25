@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import pwlf
 import csv
 from sklearn import linear_model
+from scipy.ndimage import gaussian_filter1d
 
 
 #### This script is to read the lengths of microtubules and return microtubules velocities information ####
@@ -12,7 +13,7 @@ from sklearn import linear_model
 
 
 # Read the csv file
-data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
+data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv", header=None)
 
 # Define a function to select non-zero column
 def select_non_nan_column(column):
@@ -41,6 +42,7 @@ for column_loop in range(data_length_csv.shape[1]):
 # Create a list to store rate information
 total_rate_list = []
 
+total_missing_data_list = []
 for column_number in non_nan_columns_index:
     
     # Read the non-zero column
@@ -49,6 +51,13 @@ for column_number in non_nan_columns_index:
     original_x_frame_number = np.array([np.arange(0,len(the_column))])
     original_y_microtubules_length_array = np.array([the_column])
 
+    miss_data_array = np.where(original_y_microtubules_length_array==-1)
+
+    total_missing_data_list.append(miss_data_array[1])
+
+    print("NO.%s_Seed_missing_data"%(column_number+1), miss_data_array[1])
+
+    # Plot the scatter data
     plt.scatter(original_x_frame_number, original_y_microtubules_length_array,marker='.')
     original_image_save_path = "Semantic_Segmentation/implementation/data_output/NO.%s_Seed_Corresponding_Microtubules_Lengths_Scatter_Image.png" %(column_number+1)
     plt.savefig(original_image_save_path)
@@ -79,12 +88,14 @@ for column_number in non_nan_columns_index:
     # Delete outliers
     Case_Microtubules_Delete_Outliers = reject_outliers(the_column)
 
+    #Case_Microtubules_Delete_Outliers = gaussian_filter1d(Case_Microtubules_Delete_Outliers,3)
 
     # Transfer data into array for further process
     x_frame_number = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
     y_microtubules_length_array = np.array([Case_Microtubules_Delete_Outliers])
 
     length_array = y_microtubules_length_array[0]
+    #length_array = gaussian_filter1d(y_microtubules_length_array[0],6)
 
     # Keep the list form of original length data
     x_frame_number_array = np.array([np.arange(0,len(Case_Microtubules_Delete_Outliers))])
@@ -282,4 +293,3 @@ rate_list_file_csv = open('Semantic_Segmentation/implementation/data_output/Micr
 rate_list_writer_csv = csv.writer(rate_list_file_csv)
 for row in rate_list_prepare_csv:
     rate_list_writer_csv.writerow(row)
-

@@ -3,6 +3,7 @@ import cv2
 import os
 import numpy as np
 from PIL import Image
+from numpy.lib.type_check import imag
 from skimage import io
 
 import tensorflow as tf
@@ -96,8 +97,15 @@ def load_and_predict(implementation_input_file, trained_model):
       image_size_y = implementation_img.shape[1]
 
       # Calculate the compensate pixels to make image 32 divisible
-      compensate_x = int(image_size_x/32+1)*32 - image_size_x
-      compensate_y = int(image_size_y/32+1)*32 - image_size_y
+      if image_size_x % 32 == 0:
+        compensate_x = 0
+      else:
+        compensate_x = int(image_size_x/32+1)*32 - image_size_x
+
+      if image_size_y % 32 == 0:
+        compensate_y = 0
+      else:
+        compensate_y = int(image_size_y/32+1)*32 - image_size_y
 
       # Use reflect padding the images into 32 divisible size
       implementation_reflect_img = cv2.copyMakeBorder(implementation_img,0,compensate_x,0,compensate_y,cv2.BORDER_REFLECT)

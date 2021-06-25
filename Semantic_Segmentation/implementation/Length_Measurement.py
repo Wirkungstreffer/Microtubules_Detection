@@ -10,6 +10,8 @@ from imutils import perspective
 import imutils
 import csv
 from skimage import io
+import itertools
+import heapq
 
 
 #### This script is to measure the lengths of microtubules and return the csv file recording the lengths information ####
@@ -46,6 +48,7 @@ def load_images(image_file_directory,channel):
             elif channel == 1:
                 # Read the images as binary mode
                 img = cv2.imread(i, 0)
+                img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
             else:
                 print("False channel input")
 
@@ -88,7 +91,7 @@ seed_erosion = cv2.erode(seed_dilataion, None, iterations=1)
 
 # Read the original image
 seed_original = seed_image[0]
-
+predict_seed_image_original = predict_seed_image[0]
 # Convert prdiction image to binary map by thresholding
 seed_ret, seed_binary_map = cv2.threshold(seed_erosion,127,255,0)
 
@@ -101,6 +104,7 @@ seed_areas = seed_stats[1:,cv2.CC_STAT_AREA]
 # Create a zero mask to reduce noise
 seed_image_noise_reduce = np.zeros((seed_labels.shape), np.uint8)
 
+seed_image_noise_reduce_copy = seed_image_noise_reduce.copy()
 # Start to reduce noise
 for i in range(0, seed_nlabels - 1):
     
@@ -141,75 +145,116 @@ for seed_c in seed_cnts:
     if cv2.contourArea(seed_c) < 1:
         continue
 
-    # Use minimal area rectangular to box the segmentation
-    seed_box = cv2.minAreaRect(seed_c)
-    seed_box = cv2.cv.BoxPoints(seed_box) if imutils.is_cv2() else cv2.boxPoints(seed_box)
-    seed_box = np.array(seed_box, dtype="int")
-    seed_box = perspective.order_points(seed_box)
+    # Apply approxPolyDP to find the approximate discontinues point to detect overlapping 
+    seed_epsilon = 0.15*cv2.arcLength(seed_c,True)
+    seed_approx = cv2.approxPolyDP(seed_c,seed_epsilon,True)
 
-    seed_boxes.append(seed_box.astype("int"))
+    # If approximate points number is larger than 3, means there could be overlapping
+    if (len(seed_approx) >= 3) & (cv2.contourArea(seed_c) > 200):
 
-    # Get the midpoint of the length and width of the box
-    (seed_tl, seed_tr, seed_br, seed_bl) = seed_box
+        # Create a list to store overlapping coordinate
+        seed_overlapping_coordinate_list = []
+
+        for seed_coordinate in seed_approx:
+            seed_overlapping_coordinate_list.append(seed_coordinate[0])
+
+        # Make a internal pair number sublist, for example[(0,1),(1,2),(0,2)]
+        seed_stuff = list(np.arange(0,len(seed_overlapping_coordinate_list)))
+        seed_subset_list = []
+        for seed_L in range(0, len(seed_stuff)+1):
+            for seed_subset in itertools.combinations(seed_stuff, seed_L):
+                if len(seed_subset) == 2:
+                    seed_subset_list.append(seed_subset)
+                    
+        # Create a list to store calculated different pixels
+        seed_different_pixels_list = []
+
+        # Calculate the pixels differents between line-added image and original image to verify which points couple are useful
+        for seed_sub in range(len(seed_subset_list)):
+            seed_img_orig = predict_seed_image_original.copy()
+            cv2.line(seed_img_orig , (tuple(seed_overlapping_coordinate_list[seed_subset_list[seed_sub][0]])), tuple((seed_overlapping_coordinate_list[seed_subset_list[seed_sub][1]])),(255, 255, 255), 3)
+            seed_sub_img = cv2.subtract(seed_img_orig, predict_seed_image_original)
+            #seed_sub_img = cv2.cvtColor(seed_sub_img, cv2.COLOR_BGR2GRAY)
+            seed_non_zero_pixel = cv2.countNonZero(seed_sub_img)
+            seed_different_pixels_list.append(seed_non_zero_pixel)
+
+        # According to approximation number to know the overlapped microtubules quantity
+        seed_pair_number = round(len(seed_approx)/2)
+
+        # Select the pair points that have minimal different
+        seed_small_number = heapq.nsmallest(seed_pair_number, seed_different_pixels_list) 
+        seed_small_index = []
+        for seed_t in seed_small_number:
+            seed_index = seed_different_pixels_list.index(seed_t)
+            seed_small_index.append(seed_index)
+            seed_different_pixels_list[seed_index] = 0
+        
+
+        # Add the correct points into the width points lists
+        for seed_min_index_one in seed_small_index:
+            seed_tltrX_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_one][0]][0])
+            seed_tltrY_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_one][0]][1])
+            seed_tlblX_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_one][0]][0])
+            seed_tlblY_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_one][0]][1])
+        
+        # Add the correct points into the lengthpoints lists
+        for seed_min_index_two in seed_small_index:
+            seed_blbrX_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_two][1]][0])
+            seed_blbrY_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_two][1]][1])
+            seed_trbrX_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_two][1]][0])
+            seed_trbrY_list.append(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_two][1]][1])
+        
+        # Add the correct points into the endpoints lists
+        for seed_min_index_endpoint in seed_small_index:
+            seed_endpoints_list.append([(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_endpoint][0]][0], seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_endpoint][0]][1]),(seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_endpoint][1]][0], seed_overlapping_coordinate_list[seed_subset_list[seed_min_index_endpoint][1]][1])])
     
-    # Midpoints of the width sides of box
-    (seed_tltrX, seed_tltrY) = midpoint(seed_tl, seed_tr)
-    (seed_blbrX, seed_blbrY) = midpoint(seed_bl, seed_br)
-
-    # Midpoints of the length sides of box
-    (seed_tlblX, seed_tlblY) = midpoint(seed_tl, seed_bl)
-    (seed_trbrX, seed_trbrY) = midpoint(seed_tr, seed_br)
-
-    # Add the points into the lists
-    seed_tltrX_list.append(seed_tltrX)
-    seed_tltrY_list.append(seed_tltrY)
-    seed_blbrX_list.append(seed_blbrX)
-    seed_blbrY_list.append(seed_blbrY)
-
-    seed_tlblX_list.append(seed_tlblX)
-    seed_tlblY_list.append(seed_tlblY)
-    seed_trbrX_list.append(seed_trbrX)
-    seed_trbrY_list.append(seed_trbrY)
-
-    # Calculate the length and width distances
-    seed_dA = dist.euclidean((seed_tltrX, seed_tltrY), (seed_blbrX, seed_blbrY))
-    seed_dB = dist.euclidean((seed_tlblX, seed_tlblY), (seed_trbrX, seed_trbrY))
-
-    # Add the distance information to the lists
-    seed_dA_list.append(seed_dA)
-    seed_dB_list.append(seed_dB)
-
-    # Add the endpoints coordinates into list
-    if seed_dB >= seed_dA:
-        seed_endpoints_list.append([(seed_tlblX, seed_tlblY),(seed_trbrX, seed_trbrY)])
+    # If approximate points number is smaller than 3, means no overlapping
     else:
-        seed_endpoints_list.append([(seed_tltrX, seed_tltrY),(seed_blbrX, seed_blbrY)])
 
-# Convert the list to array for the further process
-seed_tltrX_list = np.array(seed_tltrX_list)
-seed_tltrY_list = np.array(seed_tltrY_list)
-seed_blbrX_list = np.array(seed_blbrX_list)
-seed_blbrY_list = np.array(seed_blbrY_list)
+        # Use minimal area rectangular to box the segmentation
+        seed_box = cv2.minAreaRect(seed_c)
+        seed_box = cv2.cv.BoxPoints(seed_box) if imutils.is_cv2() else cv2.boxPoints(seed_box)
+        seed_box = np.array(seed_box, dtype="int")
+        seed_box = perspective.order_points(seed_box)
 
-seed_tlblX_list = np.array(seed_tlblX_list)
-seed_tlblY_list = np.array(seed_tlblY_list)
-seed_trbrX_list = np.array(seed_trbrX_list)
-seed_trbrY_list = np.array(seed_trbrY_list)
+        seed_boxes.append(seed_box.astype("int"))
 
-seed_dA_list = np.array(seed_dA_list)
-seed_dB_list = np.array(seed_dB_list)
+        # Get the midpoint of the length and width of the box
+        (seed_tl, seed_tr, seed_br, seed_bl) = seed_box
+        
+        # Midpoints of the width sides of box
+        (seed_tltrX, seed_tltrY) = midpoint(seed_tl, seed_tr)
+        (seed_blbrX, seed_blbrY) = midpoint(seed_bl, seed_br)
 
-# Draw the length & width line and the number
-seed_predict_img = seed_image_noise_reduce.copy()
-for w in range(len(seed_tltrX_list)):
-    cv2.line(seed_predict_img, (int(seed_tltrX_list[w]), int(seed_tltrY_list[w])), (int(seed_blbrX_list[w]), int(seed_blbrY_list[w])),(255, 0, 255), 2)
-    cv2.line(seed_predict_img, (int(seed_tlblX_list[w]), int(seed_tlblY_list[w])), (int(seed_trbrX_list[w]), int(seed_trbrY_list[w])),(255, 0, 255), 2)
-    cv2.putText(seed_predict_img, "{:.1f}".format(seed_dA_list[w]), (int(seed_tltrX_list[w] - 15), int(seed_tltrY_list[w] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
-    cv2.putText(seed_predict_img, "{:.1f}".format(seed_dB_list[w]), (int(seed_trbrX_list[w] + 10), int(seed_trbrY_list[w])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 255, 255), 2)
+        # Midpoints of the length sides of box
+        (seed_tlblX, seed_tlblY) = midpoint(seed_tl, seed_bl)
+        (seed_trbrX, seed_trbrY) = midpoint(seed_tr, seed_br)
 
+        # Add the width sides midpoints into the lists
+        seed_tltrX_list.append(seed_tltrX)
+        seed_tltrY_list.append(seed_tltrY)
+        seed_blbrX_list.append(seed_blbrX)
+        seed_blbrY_list.append(seed_blbrY)
 
-#cv2.imshow('seed',seed_predict_img)
-#cv2.waitKey(0)
+        # Add the length sides midpoints into the lists
+        seed_tlblX_list.append(seed_tlblX)
+        seed_tlblY_list.append(seed_tlblY)
+        seed_trbrX_list.append(seed_trbrX)
+        seed_trbrY_list.append(seed_trbrY)
+
+        # Calculate the length and width distances
+        seed_dA = dist.euclidean((seed_tltrX, seed_tltrY), (seed_blbrX, seed_blbrY))
+        seed_dB = dist.euclidean((seed_tlblX, seed_tlblY), (seed_trbrX, seed_trbrY))
+
+        # Add the distance information to the lists
+        seed_dA_list.append(seed_dA)
+        seed_dB_list.append(seed_dB)
+
+        # Add the endpoints coordinates into list
+        if seed_dB >= seed_dA:
+            seed_endpoints_list.append([(seed_tlblX, seed_tlblY),(seed_trbrX, seed_trbrY)])
+        else:
+            seed_endpoints_list.append([(seed_tltrX, seed_tltrY),(seed_blbrX, seed_blbrY)])
 
 
 # Acquire microtubles position and calculate length information 
@@ -285,8 +330,7 @@ for image in array_of_predict_input_image:
     dA_list = []
     dB_list = []
 
-    img_copy = image.copy()
-    
+    image_copy = image.copy()
     # Loop for all contour
     for c in cnts:
         
@@ -296,57 +340,116 @@ for image in array_of_predict_input_image:
 
         epsilon = 0.15*cv2.arcLength(c,True)
         approx = cv2.approxPolyDP(c,epsilon,True)
+
+        # If approximate points number is larger than 3, means there could be overlapping
+        if (len(approx) >= 3) & (cv2.contourArea(c) > 200):
+
+            # Create a list to store overlapping coordinate
+            overlapping_coordinate_list = []
+
+            for coordinate in approx:
+                overlapping_coordinate_list.append(coordinate[0])
+
+            # Make a internal pair number sublist, for example[(0,1),(1,2),(0,2)]
+            stuff = list(np.arange(0,len(overlapping_coordinate_list)))
+            subset_list = []
+            for L in range(0, len(stuff)+1):
+                for subset in itertools.combinations(stuff, L):
+                    if len(subset) == 2:
+                        subset_list.append(subset)
+                        
+            # Create a list to store calculated different pixels
+            different_pixels_list = []
+
+            # Calculate the pixels differents between line-added image and original image to verify which points couple are useful
+            for sub in range(len(subset_list)):
+                predict_image_orig = image_copy.copy()
+                cv2.line(predict_image_orig , (tuple(overlapping_coordinate_list[subset_list[sub][0]])), tuple((overlapping_coordinate_list[subset_list[sub][1]])),(255, 255, 255), 3)
+                sub_img = cv2.subtract(predict_image_orig, image_copy)
+                sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2GRAY)
+                non_zero_pixel = cv2.countNonZero(sub_img)
+                different_pixels_list.append(non_zero_pixel)
+
+            # According to approximation number to know the overlapped microtubules quantity
+            pair_number = round(len(approx)/2)
+
+            # Select the pair points that have minimal different
+            small_number = heapq.nsmallest(pair_number, different_pixels_list) 
+            small_index = []
+            for t in small_number:
+                index = different_pixels_list.index(t)
+                small_index.append(index)
+                different_pixels_list[index] = 0
+            
+
+            # Add the correct points into the width points lists
+            for min_index in small_index:
+                tltrX = overlapping_coordinate_list[subset_list[min_index][0]][0]
+                tltrX_list.append(tltrX)
+                tltrY = overlapping_coordinate_list[subset_list[min_index][0]][1]
+                tltrY_list.append(tltrY)
+                tlblX = overlapping_coordinate_list[subset_list[min_index][0]][0]
+                tlblX_list.append(tlblX)
+                tlblY = overlapping_coordinate_list[subset_list[min_index][0]][1]
+                tlblY_list.append(tlblY)
+                blbrX = overlapping_coordinate_list[subset_list[min_index][1]][0]
+                blbrX_list.append(blbrX)
+                blbrY = overlapping_coordinate_list[subset_list[min_index][1]][1]
+                blbrY_list.append(blbrY)
+                trbrX = overlapping_coordinate_list[subset_list[min_index][1]][0]
+                trbrX_list.append(trbrX)
+                trbrY = overlapping_coordinate_list[subset_list[min_index][1]][1]
+                trbrY_list.append(trbrY)
+                
+                # Calculate the length and width distances
+                dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
+                dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
+                
+                # Add the distance information to the lists
+                dA_list.append(dA)
+                dB_list.append(dB)
+            
         
-        if len(approx) >= 3:
-            if cv2.contourArea(c) < 200:
-                continue
-        
-            cv2.drawContours(img_copy, c, -1, (255, 255, 255), 3)
-            cv2.drawContours(img_copy, approx, -1, (255, 255, 255), 3)
+        # If approximate points number is smaller than 3, means no overlapping
+        else:
+            
+            # Use minimal area rectangular to box the segmentation
+            box = cv2.minAreaRect(c)
+            box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
+            box = np.array(box, dtype="int")
+            box = perspective.order_points(box)
 
-            cv2.imshow('img',img_copy)
-            cv2.waitKey(0)
+            boxes.append(box.astype("int"))
 
-            # Add the visualized measurement to the list
-            overlapping_images_list.append(img_copy)
+            # Get the midpoint of the length and width of the box
+            (tl, tr, br, bl) = box
+            
+            # Midpoints of the width sides of box
+            (tltrX, tltrY) = midpoint(tl, tr)
+            (blbrX, blbrY) = midpoint(bl, br)
+            
+            # Midpoints of the length sides of box
+            (tlblX, tlblY) = midpoint(tl, bl)
+            (trbrX, trbrY) = midpoint(tr, br)
 
-        # Use minimal area rectangular to box the segmentation
-        box = cv2.minAreaRect(c)
-        box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
-        box = np.array(box, dtype="int")
-        box = perspective.order_points(box)
+            # Add the points into the lists
+            tltrX_list.append(tltrX)
+            tltrY_list.append(tltrY)
+            blbrX_list.append(blbrX)
+            blbrY_list.append(blbrY)
 
-        boxes.append(box.astype("int"))
+            tlblX_list.append(tlblX)
+            tlblY_list.append(tlblY)
+            trbrX_list.append(trbrX)
+            trbrY_list.append(trbrY)
 
-        # Get the midpoint of the length and width of the box
-        (tl, tr, br, bl) = box
-        
-        # Midpoints of the width sides of box
-        (tltrX, tltrY) = midpoint(tl, tr)
-        (blbrX, blbrY) = midpoint(bl, br)
-        
-        # Midpoints of the length sides of box
-        (tlblX, tlblY) = midpoint(tl, bl)
-        (trbrX, trbrY) = midpoint(tr, br)
+            # Calculate the length and width distances
+            dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
+            dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
 
-        # Add the points into the lists
-        tltrX_list.append(tltrX)
-        tltrY_list.append(tltrY)
-        blbrX_list.append(blbrX)
-        blbrY_list.append(blbrY)
-
-        tlblX_list.append(tlblX)
-        tlblY_list.append(tlblY)
-        trbrX_list.append(trbrX)
-        trbrY_list.append(trbrY)
-
-        # Calculate the length and width distances
-        dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
-        dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
-
-        # Add the distance information to the lists
-        dA_list.append(dA)
-        dB_list.append(dB)
+            # Add the distance information to the lists
+            dA_list.append(dA)
+            dB_list.append(dB)
 
     # Convert the list to array for the further process
     tltrX_list = np.array(tltrX_list)
@@ -451,21 +554,21 @@ for image in array_of_predict_input_image:
         #cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
-        cv2.circle(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), 2, (255, 0, 255), -1)
-        cv2.circle(orignal_composite, (int(blbrX_list[i]), int(blbrY_list[i])), 2, (255, 0, 255), -1)
+        #cv2.circle(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), 2, (255, 0, 255), -1)
+        #cv2.circle(orignal_composite, (int(blbrX_list[i]), int(blbrY_list[i])), 2, (255, 0, 255), -1)
         cv2.circle(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), 2, (255, 0, 255), -1)
         cv2.circle(orignal_composite, (int(trbrX_list[i]), int(trbrY_list[i])), 2, (255, 0, 255), -1)
 
-    for j in range(len(seed_tltrX_list)):
+    for j in range(len(seed_endpoints_list)):
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
         #cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
-        cv2.putText(orignal_composite, "NO{:d}".format(j+1), (int(seed_tltrX_list[j] - 15), int(seed_tltrY_list[j] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (0, 255, 255), 2)
+        cv2.putText(orignal_composite, "NO{:d}".format(j+1), (int(seed_endpoints_list[j][0][0] - 15), int(seed_endpoints_list[j][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (0, 255, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
-        cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
-        cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
-        cv2.circle(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), 2, (0, 255, 255), -1)
-        cv2.circle(orignal_composite, (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])), 2, (0, 255, 255), -1)
+        #cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
+        #cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
+        cv2.circle(orignal_composite, (int(seed_endpoints_list[j][0][0]), int(seed_endpoints_list[j][0][1])), 2, (0, 255, 255), -1)
+        cv2.circle(orignal_composite, (int(seed_endpoints_list[j][1][0]), int(seed_endpoints_list[j][1][1])), 2, (0, 255, 255), -1)
 
     # Add the visualized measurement to the list
     visualize_measurements_images_list.append(orignal_composite)
@@ -474,28 +577,28 @@ for image in array_of_predict_input_image:
     predict_add_img = cv2.add(predict_seed_image[0],image)
 
     # Draw the length & width line and the number
-    predict_composite = predict_add_img.copy()
+    predict_composite = image
     for k in range(len(tltrX_list)):
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
         #cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 0, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
-        cv2.circle(predict_composite, (int(tltrX_list[k]), int(tltrY_list[k])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(blbrX_list[k]), int(blbrY_list[k])), 2, (255, 255, 255), -1)
+        #cv2.circle(predict_composite, (int(tltrX_list[k]), int(tltrY_list[k])), 2, (255, 255, 255), -1)
+        #cv2.circle(predict_composite, (int(blbrX_list[k]), int(blbrY_list[k])), 2, (255, 255, 255), -1)
         cv2.circle(predict_composite, (int(tlblX_list[k]), int(tlblY_list[k])), 2, (255, 255, 255), -1)
         cv2.circle(predict_composite, (int(trbrX_list[k]), int(trbrY_list[k])), 2, (255, 255, 255), -1)
 
-    for l in range(len(seed_tltrX_list)):
+    for l in range(len(seed_endpoints_list)):
         # Draw lines and informations of microtubules
-        #cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
-        #cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
-        cv2.putText(predict_composite, "NO{:d}".format(l+1), (int(seed_tltrX_list[l] - 15), int(seed_tltrY_list[l] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (255, 255, 255), 2)
+        #cv2.line(orignal_composite, (int(seed_tltrX_list[l]), int(seed_tltrY_list[l])), (int(seed_blbrX_list[l]), int(seed_blbrY_list[l])),(0, 255, 255), 2)
+        #cv2.line(orignal_composite, (int(seed_tlblX_list[l]), int(seed_tlblY_list[l])), (int(seed_trbrX_list[l]), int(seed_trbrY_list[l])),(0, 255, 255), 2)
+        cv2.putText(predict_composite, "NO{:d}".format(l+1), (int(seed_endpoints_list[l][0][0] - 15), int(seed_endpoints_list[l][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (0, 255, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
-        cv2.circle(predict_composite, (int(seed_tltrX_list[l]), int(seed_tltrY_list[l])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(seed_blbrX_list[l]), int(seed_blbrY_list[l])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(seed_tlblX_list[l]), int(seed_tlblY_list[l])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(seed_trbrX_list[l]), int(seed_trbrY_list[l])), 2, (255, 255, 255), -1)
+        #cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
+        #cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
+        cv2.circle(predict_composite, (int(seed_endpoints_list[l][0][0]), int(seed_endpoints_list[l][0][1])), 2, (0, 255, 255), -1)
+        cv2.circle(predict_composite, (int(seed_endpoints_list[l][1][0]), int(seed_endpoints_list[l][1][1])), 2, (0, 255, 255), -1)
 
     # Add the visualized measurement to the list
     prediction_measurements_images_list.append(predict_composite)
@@ -505,7 +608,7 @@ for image in array_of_predict_input_image:
     #cv2.imshow("Measurement Visualization", predict_composite)
     #cv2.waitKey(0)
 
-print("In totall frame quantity: ",frame)
+print("In totall frame quantity: ",frame-1)
 # Generate csv files
 #########################################################################################################################
 
@@ -560,17 +663,3 @@ for n in range(0, frame-1):
   # Change the names of prediction for recognition and further easy to load
   implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
   io.imsave(implementation_prediction_save_path, prediction_add)
-
-# Set the seeds images and predictions saving path
-overlapping_path = "Semantic_Segmentation/implementation/data_output/overlapping_image"
-
-if os.path.exists(overlapping_path)==False:
-    os.makedirs(overlapping_path)
-
-# Save the predictions into the implementation_output folder
-for m in range(0, len(overlapping_images_list)):
-  overlapping_image = overlapping_images_list[m]
-
-  # Change the names of prediction for recognition and further easy to load
-  overlapping_save_path = "%s/overlapping_frame_%s.png"% (overlapping_path, (m+1))
-  io.imsave(overlapping_save_path, overlapping_image)

@@ -1,12 +1,13 @@
 import os
-os.environ['DISPLAY'] = ':1'
+#os.environ['DISPLAY'] = ':1'
 import cv2
 from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
 from skimage import measure, color, io
+import imutils
 
-img = cv2.imread("Semantic_Segmentation/implementation/prediction_seed/seed_predict_0.png")  #Read as color (3 channels)
+img = cv2.imread("Semantic_Segmentation/implementation/prediction_seed/200818_Xb_Reaction2_6uM002_seeds_001_prediction.png")  #Read as color (3 channels)
 img_grey = img[:,:,0]
 
 ## transform the unet result to binary image
@@ -31,33 +32,20 @@ dist_transform = cv2.distanceTransform(opening,cv2.DIST_L2,5)
 
 
 #Let us threshold the dist transform by starting at 1/2 its max value.
-ret2, sure_fg = cv2.threshold(dist_transform, 0.2*dist_transform.max(),255,0)
+ret2, sure_fg = cv2.threshold(dist_transform, 0.4*dist_transform.max(),255,0)
 
 sure_fg = np.uint8(sure_fg)
 separate_parts = cv2.subtract(opening, sure_fg)
-
-fig, ax = plt.subplots(ncols=3, figsize=(20, 20))
-ax[0].imshow(dist_transform)
-ax[0].set_title('dist_transform')
-ax[0].axis('off')
-
-ax[1].imshow(sure_fg)
-ax[1].set_title('sure_fg')
-ax[1].axis('off')
-
-ax[2].imshow(separate_parts)
-ax[2].set_title('separate_parts')
-ax[2].axis('off')
-
-plt.show()
 
 # Unknown ambiguous region is nothing but bkground - foreground
 sure_fg = np.uint8(sure_fg)
 unknown = cv2.subtract(sure_bg,sure_fg)
 
+
 # Unknown regions will be labeled 0. 
 #For markers let us use ConnectedComponents. 
 ret3, markers = cv2.connectedComponents(sure_fg)
+
 
 #One problem rightnow is that the entire background pixels is given value 0.
 #This means watershed considers this region as unknown.
@@ -70,6 +58,7 @@ markers[unknown==255] = 0
 
 #Now we are ready for watershed filling. 
 markers = cv2.watershed(img, markers)
+markers = np.uint8(markers)
 #plt.imshow(markers, cmap='gray')
 
 #Let us color boundaries in yellow. 
@@ -78,17 +67,11 @@ img[markers == -1] = [0,255,255]
 img2 = color.label2rgb(markers, bg_label=0)
 
 
-#fig, ax = plt.subplots(ncols=2, figsize=(20, 20))
-#ax[0].imshow(img)
-#ax[0].set_title('Overlay on original image')
-#ax[0].axis('off')
+img2 = cv2.normalize(img2, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 
-#ax[1].imshow(img2)
-#ax[1].set_title('Colored Grains')
-#ax[1].axis('off')
+gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+ret3, seperate_seg = cv2.threshold(gray,0,255,0)
 
-#plt.show()
-
-#cv2.imshow('Overlay on original image', img)
-#cv2.imshow('Colored Grains', img2)
-#cv2.waitKey(0)
+cv2.imshow('img', markers)
+cv2.waitKey(0)
+cv2.imwrite("Semantic_Segmentation/implementation/watershed.png",img)
