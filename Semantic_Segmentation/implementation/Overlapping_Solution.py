@@ -137,12 +137,13 @@ for seed_c in seed_cnts:
         for sub in range(len(subset_list)):
             img_orig = image.copy()
             cv2.line(img_orig , (tuple(overlapping_coordinate_list[subset_list[sub][0]])), tuple((overlapping_coordinate_list[subset_list[sub][1]])),(255, 255, 255), 3)
+            print(tuple(overlapping_coordinate_list[subset_list[sub][0]]),tuple(overlapping_coordinate_list[subset_list[sub][1]]))
             sub_img = cv2.subtract(img_orig, image)
             sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2GRAY)
             non_zero_pixel = cv2.countNonZero(sub_img)
             different_pixels_list.append(non_zero_pixel)
 
-        #print(different_pixels_list)
+        print(different_pixels_list)
 
         pair_number = round(len(approx)/2)
 
@@ -156,17 +157,15 @@ for seed_c in seed_cnts:
         #print(small_number)
         #print(small_index)
 
-        for min_index_one in small_index:
-            seed_tltrX_list.append(overlapping_coordinate_list[subset_list[min_index_one][0]][0])
-            seed_tltrY_list.append(overlapping_coordinate_list[subset_list[min_index_one][0]][1])
-            seed_tlblX_list.append(overlapping_coordinate_list[subset_list[min_index_one][0]][0])
-            seed_tlblY_list.append(overlapping_coordinate_list[subset_list[min_index_one][0]][1])
-
-        for min_index_two in small_index:
-            seed_blbrX_list.append(overlapping_coordinate_list[subset_list[min_index_two][1]][0])
-            seed_blbrY_list.append(overlapping_coordinate_list[subset_list[min_index_two][1]][1])
-            seed_trbrX_list.append(overlapping_coordinate_list[subset_list[min_index_two][1]][0])
-            seed_trbrY_list.append(overlapping_coordinate_list[subset_list[min_index_two][1]][1])
+        for min_index in small_index:
+            seed_tltrX_list.append(overlapping_coordinate_list[subset_list[min_index][0]][0])
+            seed_tltrY_list.append(overlapping_coordinate_list[subset_list[min_index][0]][1])
+            seed_tlblX_list.append(overlapping_coordinate_list[subset_list[min_index][0]][0])
+            seed_tlblY_list.append(overlapping_coordinate_list[subset_list[min_index][0]][1])
+            seed_blbrX_list.append(overlapping_coordinate_list[subset_list[min_index][1]][0])
+            seed_blbrY_list.append(overlapping_coordinate_list[subset_list[min_index][1]][1])
+            seed_trbrX_list.append(overlapping_coordinate_list[subset_list[min_index][1]][0])
+            seed_trbrY_list.append(overlapping_coordinate_list[subset_list[min_index][1]][1])
 
         for min_index_endpoint in small_index:
             seed_endpoints_list.append([(overlapping_coordinate_list[subset_list[min_index_endpoint][0]][0], overlapping_coordinate_list[subset_list[min_index_endpoint][0]][1]),(overlapping_coordinate_list[subset_list[min_index_endpoint][1]][0], overlapping_coordinate_list[subset_list[min_index_endpoint][1]][1])])

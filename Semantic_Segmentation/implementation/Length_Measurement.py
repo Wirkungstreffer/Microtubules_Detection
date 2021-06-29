@@ -366,7 +366,7 @@ for image in array_of_predict_input_image:
                 predict_image_orig = image_copy.copy()
                 cv2.line(predict_image_orig , (tuple(overlapping_coordinate_list[subset_list[sub][0]])), tuple((overlapping_coordinate_list[subset_list[sub][1]])),(255, 255, 255), 3)
                 sub_img = cv2.subtract(predict_image_orig, image_copy)
-                sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2GRAY)
+                #sub_img = cv2.cvtColor(sub_img, cv2.COLOR_BGR2GRAY)
                 non_zero_pixel = cv2.countNonZero(sub_img)
                 different_pixels_list.append(non_zero_pixel)
 
@@ -563,7 +563,7 @@ for image in array_of_predict_input_image:
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])),(0, 255, 255), 2)
         #cv2.line(orignal_composite, (int(seed_tlblX_list[j]), int(seed_tlblY_list[j])), (int(seed_trbrX_list[j]), int(seed_trbrY_list[j])),(0, 255, 255), 2)
-        cv2.putText(orignal_composite, "NO{:d}".format(j+1), (int(seed_endpoints_list[j][0][0] - 15), int(seed_endpoints_list[j][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (0, 255, 255), 2)
+        cv2.putText(orignal_composite, "{:d}".format(j+1), (int(seed_endpoints_list[j][0][0] - 15), int(seed_endpoints_list[j][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (0, 255, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
         #cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
         #cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
@@ -593,7 +593,7 @@ for image in array_of_predict_input_image:
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(seed_tltrX_list[l]), int(seed_tltrY_list[l])), (int(seed_blbrX_list[l]), int(seed_blbrY_list[l])),(0, 255, 255), 2)
         #cv2.line(orignal_composite, (int(seed_tlblX_list[l]), int(seed_tlblY_list[l])), (int(seed_trbrX_list[l]), int(seed_trbrY_list[l])),(0, 255, 255), 2)
-        cv2.putText(predict_composite, "NO{:d}".format(l+1), (int(seed_endpoints_list[l][0][0] - 15), int(seed_endpoints_list[l][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (0, 255, 255), 2)
+        cv2.putText(predict_composite, "{:d}".format(l+1), (int(seed_endpoints_list[l][0][0] - 15), int(seed_endpoints_list[l][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (255, 255, 255), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
         #cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
         #cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
