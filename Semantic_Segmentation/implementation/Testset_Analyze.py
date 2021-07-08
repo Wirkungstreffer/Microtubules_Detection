@@ -9,11 +9,11 @@ from sklearn import linear_model
 from scipy.ndimage import gaussian_filter1d
 
 # Read the csv file   Semantic_Segmentation/implementation/Testset_full_auto/Testset_Only_Labels/200818_xb_reaction2_6um003_testset/Ground_Truth
-cnn_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200820_xl_reaction6_03um001_testset/CNN_Results/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
-label_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200820_xl_reaction6_03um001_testset/Ground_Truth/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
-cnn_MT_label_seed_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200820_xl_reaction6_03um001_testset/Ground_Truth_Seed_CNN_MT/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
+cnn_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200825_xb_reaction3_03um007_testset/CNN_Results/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
+label_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200825_xb_reaction3_03um007_testset/Ground_Truth/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
+cnn_MT_label_seed_data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200825_xb_reaction3_03um007_testset/Ground_Truth_Seed_CNN_MT/Microtubules_Lengths_with_Seed_Concatenation.csv",header=None)
 
-error_csv_save_path = 'Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200820_xl_reaction6_03um001_testset/Seeds_Concatenated_Error_List.csv'
+error_csv_save_path = 'Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200825_xb_reaction3_03um007_testset/Seeds_Concatenated_Error_List.csv'
 
 # Get data information
 cnn_row_number = cnn_data_length_csv.shape[0]
@@ -168,6 +168,7 @@ for column_loop_cnn_MT_label_seed in range(cnn_MT_label_seed_data_length_csv.sha
 
 
 #non_nan_columns_index_cnn_MT_label_seed.remove(2)
+#non_nan_columns_index_label.remove(6)
 #non_nan_columns_index_cnn_MT_label_seed.remove(31)
 #non_nan_columns_index_cnn_MT_label_seed.remove(42)
 #non_nan_columns_index_cnn_MT_label_seed.remove(80)

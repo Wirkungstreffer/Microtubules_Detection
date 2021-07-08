@@ -48,10 +48,10 @@ def load_images(image_file_directory,channel):
     
     return images
 
-CNN_path = "Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200820_xl_reaction6_03um001_testset/CNN_Results/prediction_image/"
-GT_path = "Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200820_xl_reaction6_03um001_testset/Ground_Truth/testset_label/"
+CNN_path = "Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200825_xb_reaction3_03um007_testset/CNN_Results/prediction_image/"
+GT_path = "Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200825_xb_reaction3_03um007_testset/Ground_Truth/testset_label/"
 
-error_csv_save_path = 'Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200820_xl_reaction6_03um001_testset/Error_List.csv'
+error_csv_save_path = 'Semantic_Segmentation/implementation/Testset_full_auto/Testset_Labels/200825_xb_reaction3_03um007_testset/Error_List.csv'
 
 array_of_CNN_image = load_images(CNN_path, 1)
 array_of_GT_image = load_images(GT_path, 1)
