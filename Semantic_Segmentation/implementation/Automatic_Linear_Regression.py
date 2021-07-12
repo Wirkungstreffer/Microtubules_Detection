@@ -36,7 +36,7 @@ for column_loop in range(data_length_csv.shape[1]):
     column_validation = select_non_nan_column(data_length_csv[data_length_csv.columns[column_loop]])
     
     # Filter out the falsh & miss detected column
-    if len(column_validation) >= 0.4*data_length_csv.shape[0]:
+    if len(column_validation) >= 0.3*data_length_csv.shape[0]:
         non_nan_columns_index.append(column_loop) 
 
 # Create a list to store rate information

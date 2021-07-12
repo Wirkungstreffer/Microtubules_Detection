@@ -330,6 +330,10 @@ for image in array_of_predict_input_image:
     dA_list = []
     dB_list = []
 
+    microtubules_endpoints_list = []
+
+    Length_Micotubulues_list = []
+
     image_copy = image.copy()
     # Loop for all contour
     for c in cnts:
@@ -408,8 +412,15 @@ for image in array_of_predict_input_image:
                 # Add the distance information to the lists
                 dA_list.append(dA)
                 dB_list.append(dB)
-            
-        
+
+                if dB >= dA:
+                    microtubules_endpoints_list.append([(tlblX, tlblY),(trbrX, trbrY)])
+                    Length_Micotubulues_list.append(dB)
+                else:
+                    microtubules_endpoints_list.append([(tltrX, tltrY),(blbrX, blbrY)])
+                    Length_Micotubulues_list.append(dA)
+                    
+                      
         # If approximate points number is smaller than 3, means no overlapping
         else:
             
@@ -451,6 +462,14 @@ for image in array_of_predict_input_image:
             dA_list.append(dA)
             dB_list.append(dB)
 
+            # Add the endpoints coordinates into list
+            if dB >= dA:
+                microtubules_endpoints_list.append([(tlblX, tlblY),(trbrX, trbrY)])
+                Length_Micotubulues_list.append(dB)
+            else:
+                microtubules_endpoints_list.append([(tltrX, tltrY),(blbrX, blbrY)])
+                Length_Micotubulues_list.append(dA)
+
     # Convert the list to array for the further process
     tltrX_list = np.array(tltrX_list)
     tltrY_list = np.array(tltrY_list)
@@ -465,9 +484,10 @@ for image in array_of_predict_input_image:
     dA_list = np.array(dA_list)
     dB_list = np.array(dB_list)
 
+    Length_Micotubulues_list = np.array(Length_Micotubulues_list)
     
     # The lengths of microtubules that detected and measured in video frames
-    Length_Micotubulues.append(dB_list)
+    Length_Micotubulues.append(Length_Micotubulues_list)
 
     
     # The lengths of microtubules which concatenation with corresponding seed
@@ -485,13 +505,13 @@ for image in array_of_predict_input_image:
         seed_endpoint_validation_number = 0
         
         # Calculate the distance between each seeds and microtubules, save the microtubules have smaller distance than tolerance with seeds
-        for mt in range(len(tlblX_list)):
+        for mt in range(len(microtubules_endpoints_list)):
             
             # Caculate the distance between seeds endpoints and microtubules endpoints
-            distance_1 = dist.euclidean(seed_endpoint_1, (tlblX_list[mt], tlblY_list[mt]))
-            distance_2 = dist.euclidean(seed_endpoint_1, (trbrX_list[mt], trbrY_list[mt]))
-            distance_3 = dist.euclidean(seed_endpoint_2, (tlblX_list[mt], tlblY_list[mt]))
-            distance_4 = dist.euclidean(seed_endpoint_2, (trbrX_list[mt], trbrY_list[mt]))
+            distance_1 = dist.euclidean(seed_endpoint_1, (microtubules_endpoints_list[mt][0][0], microtubules_endpoints_list[mt][0][1]))
+            distance_2 = dist.euclidean(seed_endpoint_1, (microtubules_endpoints_list[mt][1][0], microtubules_endpoints_list[mt][1][1]))
+            distance_3 = dist.euclidean(seed_endpoint_2, (microtubules_endpoints_list[mt][0][0], microtubules_endpoints_list[mt][0][1]))
+            distance_4 = dist.euclidean(seed_endpoint_2, (microtubules_endpoints_list[mt][1][0], microtubules_endpoints_list[mt][1][1]))
 
             # Save the microtubules index which has smaller distance than tolerance
             if distance_1 < tolerance:
@@ -507,25 +527,25 @@ for image in array_of_predict_input_image:
                 correspond_mt.append(mt) 
                 seed_endpoint_validation_number = 2
             else:
-                correspond_mt.append(len(tlblX_list) + 200)
+                correspond_mt.append(len(microtubules_endpoints_list) + 200)
 
         # Make the stored list into sublist according to each seed
-        for mt_number in range(0,len(correspond_mt),len(tlblX_list)):
-            number_group = correspond_mt[mt_number:mt_number+len(tlblX_list)]
+        for mt_number in range(0,len(correspond_mt),len(microtubules_endpoints_list)):
+            number_group = correspond_mt[mt_number:mt_number+len(microtubules_endpoints_list)]
             correspond_mt_per_seed.append(number_group)
 
         # Find the microtubules corresponding to the seed, sometimes there could be two microtubules in both seeds endpoints
         correspond_indexes = []
         for index_number in range(len(correspond_mt_per_seed[0])):
-            if correspond_mt_per_seed[0][index_number] < (len(tlblX_list) + 200):
+            if correspond_mt_per_seed[0][index_number] < (len(microtubules_endpoints_list) + 200):
                 correspond_indexes.append(index_number)
 
         # Only need the longer microtubules, delete the shorter microtubules information
         if len(correspond_indexes) == 2:
             if dB_list[correspond_indexes[0]] > dB_list[correspond_indexes[1]]:
-                correspond_mt_per_seed[0][correspond_indexes[1]] = len(tlblX_list) + 200
+                correspond_mt_per_seed[0][correspond_indexes[1]] = len(microtubules_endpoints_list) + 200
             elif dB_list[correspond_indexes[0]] < dB_list[correspond_indexes[1]]:
-                correspond_mt_per_seed[0][correspond_indexes[0]] = len(tlblX_list) + 200
+                correspond_mt_per_seed[0][correspond_indexes[0]] = len(microtubules_endpoints_list) + 200
         
         # Find the corresponding index for each seed
         for the_index in correspond_mt_per_seed:
@@ -534,21 +554,21 @@ for image in array_of_predict_input_image:
         
         # Save the seed corresponding microtubules length information to the seed_correspond_microtubules lists
         for x in range(len(min_index_list)):
-            if min_val_list[x] == len(tlblX_list) + 200 :
+            if min_val_list[x] == len(microtubules_endpoints_list) + 200 :
                 seed_correspond_microtubules_length.append(-1)
             elif seed_endpoint_validation_number == 1 :
                 #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
-                seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_1,(tlblX_list[min_index_list[x]],tlblY_list[min_index_list[x]])), dist.euclidean(seed_endpoint_1,(trbrX_list[min_index_list[x]],trbrY_list[min_index_list[x]]))))
+                seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_1,(microtubules_endpoints_list[min_index_list[x]][0][0],microtubules_endpoints_list[min_index_list[x]][0][1])), dist.euclidean(seed_endpoint_1,(microtubules_endpoints_list[min_index_list[x]][1][0],microtubules_endpoints_list[min_index_list[x]][1][1]))))
             elif seed_endpoint_validation_number == 2 :
                 #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
-                seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_2,(tlblX_list[min_index_list[x]],tlblY_list[min_index_list[x]])), dist.euclidean(seed_endpoint_1,(trbrX_list[min_index_list[x]],trbrY_list[min_index_list[x]]))))
+                seed_correspond_microtubules_length.append(max(dist.euclidean(seed_endpoint_2,(microtubules_endpoints_list[min_index_list[x]][0][0],microtubules_endpoints_list[min_index_list[x]][0][1])), dist.euclidean(seed_endpoint_1,(microtubules_endpoints_list[min_index_list[x]][1][0],microtubules_endpoints_list[min_index_list[x]][1][1]))))
 
     # Add seed image and microtubules image
     add_img = cv2.add(seed_original,input_original)
 
     # Draw the length & width line and the number
     orignal_composite = add_img.copy()
-    for i in range(len(tltrX_list)):
+    for i in range(len(microtubules_endpoints_list)):
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
         #cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
@@ -556,8 +576,8 @@ for image in array_of_predict_input_image:
         #cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
         #cv2.circle(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), 2, (255, 0, 255), -1)
         #cv2.circle(orignal_composite, (int(blbrX_list[i]), int(blbrY_list[i])), 2, (255, 0, 255), -1)
-        cv2.circle(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), 2, (255, 0, 255), -1)
-        cv2.circle(orignal_composite, (int(trbrX_list[i]), int(trbrY_list[i])), 2, (255, 0, 255), -1)
+        cv2.circle(orignal_composite, (int(microtubules_endpoints_list[i][0][0]), int(microtubules_endpoints_list[i][0][1])), 2, (255, 0, 255), -1)
+        cv2.circle(orignal_composite, (int(microtubules_endpoints_list[i][1][0]), int(microtubules_endpoints_list[i][1][1])), 2, (255, 0, 255), -1)
 
     for j in range(len(seed_endpoints_list)):
         # Draw lines and informations of microtubules
@@ -578,7 +598,7 @@ for image in array_of_predict_input_image:
 
     # Draw the length & width line and the number
     predict_composite = image
-    for k in range(len(tltrX_list)):
+    for k in range(len(microtubules_endpoints_list)):
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
         #cv2.line(orignal_composite, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
@@ -586,8 +606,8 @@ for image in array_of_predict_input_image:
         #cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
         #cv2.circle(predict_composite, (int(tltrX_list[k]), int(tltrY_list[k])), 2, (255, 255, 255), -1)
         #cv2.circle(predict_composite, (int(blbrX_list[k]), int(blbrY_list[k])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(tlblX_list[k]), int(tlblY_list[k])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(trbrX_list[k]), int(trbrY_list[k])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(microtubules_endpoints_list[k][0][0]), int(microtubules_endpoints_list[k][0][1])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(microtubules_endpoints_list[k][1][0]), int(microtubules_endpoints_list[k][1][1])), 2, (255, 255, 255), -1)
 
     for l in range(len(seed_endpoints_list)):
         # Draw lines and informations of microtubules
