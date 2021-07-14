@@ -13,9 +13,9 @@ from sklearn import linear_model
 
 
 # Input the manually correction seeds number 
-correct_NO = 18
+correct_NO = 6
 # Input the manually correct breakpoints number, please input the breakpoints number larger than 1
-correct_breakpoint_number = 4
+correct_breakpoint_number = 3
 
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
@@ -32,7 +32,7 @@ def reject_outliers(data):
     
     # Caculate mean and variance of the data
     for n_z in data:
-        if n_z != 0:
+        if n_z != -1:
             data_non_zero.append(n_z)
 
     u = np.mean(data_non_zero)
