@@ -71,4 +71,5 @@ All the output data is in the folder "Microtubules_Detection-master/Semantic_Seg
 
 #############################################################################################
 
+The json file to dataset shell command is included in repository(json_to_dataset.sh).
 To transfer json file to image data, use console cd to the file directory, further run shell command $sh json_to_dataset.sh
