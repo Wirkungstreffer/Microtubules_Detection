@@ -678,8 +678,8 @@ if os.path.exists(prediction_composite_path)==False:
 
 # Save the predictions into the implementation_output folder
 for n in range(0, frame-1):
-  prediction_add = prediction_measurements_images_list[n]
+    prediction_add = prediction_measurements_images_list[n]
 
-  # Change the names of prediction for recognition and further easy to load
-  implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
-  io.imsave(implementation_prediction_save_path, prediction_add)
+    # Change the names of prediction for recognition and further easy to load
+    implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
+    io.imsave(implementation_prediction_save_path, prediction_add)

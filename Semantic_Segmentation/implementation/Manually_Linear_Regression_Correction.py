@@ -13,9 +13,9 @@ from sklearn import linear_model
 
 
 # Input the manually correction seeds number 
-correct_NO = 6
-# Input the manually correct breakpoints number, please input the breakpoints number larger than 1
-correct_breakpoint_number = 3
+correct_NO = 25
+# Input the manually correct breakpoints number, please input the breakpoints number larger than or equal 1
+correct_breakpoint_number = 5
 
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
