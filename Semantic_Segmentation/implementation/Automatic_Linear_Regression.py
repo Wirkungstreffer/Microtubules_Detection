@@ -39,9 +39,21 @@ for column_loop in range(data_length_csv.shape[1]):
     if len(column_validation) >= 0.3*data_length_csv.shape[0]:
         non_nan_columns_index.append(column_loop) 
 
+
+# The scale proportion
+frame_second_proportion = 5        # 5 sec per frame
+length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
+
 # Create a list to store rate information
 total_rate_list = []
 
+# Create a list to store event time information
+total_event_time_list = []
+
+# Create a list to store event length information
+total_event_length_list = []
+
+# Create a list to store missed data number
 total_missing_data_list = []
 for column_number in non_nan_columns_index:
     
@@ -55,7 +67,7 @@ for column_number in non_nan_columns_index:
 
     total_missing_data_list.append(miss_data_array[1])
 
-    print("NO.%s_Seed_missing_data"%(column_number+1), miss_data_array[1])
+    #print("NO.%s_Seed_missing_data"%(column_number+1), miss_data_array[1])
 
     # Plot the scatter data
     plt.scatter(original_x_frame_number, original_y_microtubules_length_array,marker='.')
@@ -203,8 +215,17 @@ for column_number in non_nan_columns_index:
         line_X = np.arange(X.min(), X.max())[:, np.newaxis]
         line_y_ransac = ransac.predict(line_X)
 
+        # Calculate duration that the event lasted
+        event_frame_length = max(X) - min(X)
+        
         # Get the slope
         slopes = ransac.estimator_.coef_[0]
+
+        # Multiply event frame length and corresponding slope to get event length
+        event_length = []
+        for the_event in range(len(event_frame_length)):
+            the_event_length = (event_frame_length[the_event])*(slopes[the_event])
+            event_length.append(the_event_length)
 
         # Draw and save the piecewise linear regression image
         plt.scatter(X[inlier_mask], y[inlier_mask], color='yellowgreen', marker='.', label='Inliers')
@@ -227,9 +248,21 @@ for column_number in non_nan_columns_index:
         breaks_int = []
         for bp_number in breaks:
             breaks_int.append(round(bp_number))
+        
+        # Subtract adjacent breakpoint to get the event frame length
+        event_frame_length = []
+        for event in range(len(breaks_int) - 1):
+            frame_length = breaks_int[event + 1] - breaks_int[event]
+            event_frame_length.append(frame_length)
 
         # Get the first derivative of the linear regressions
         slopes = my_pwlf.calc_slopes()
+
+        # Multiply event frame length and corresponding slope to get event length
+        event_length = []
+        for the_event in range(len(event_frame_length)):
+            the_event_length = (event_frame_length[the_event])*(slopes[the_event])
+            event_length.append(the_event_length)
 
         # Make the linear regression prediction
         x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
@@ -251,20 +284,29 @@ for column_number in non_nan_columns_index:
 
     print("The breakpoint of NO.%d seed corresponding microtubule is:"%(column_number+1),breakpoint_number)
 
-    # Use the scale proportion to get the rate
-    frame_second_proportion = 5        # 5 sec per frame
-    length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
-
     # Store the rate
     rate_list = []
     for slope in slopes:
         rate = slope*(1/length_pixel_proportion)/frame_second_proportion
         rate_list.append(rate)
 
+    # Store the event duration
+    event_time_list = []
+    for event_frame_length_case in event_frame_length:
+        time_real = event_frame_length_case*frame_second_proportion
+        event_time_list.append(time_real)
+
+    # Store the event length
+    event_length_list = []
+    for event_length_case in event_length:
+        length_real = np.abs(event_length_case)/length_pixel_proportion
+        event_length_list.append(length_real)
+
     print("The rates of NO.%d seed corresponding microtubule: "%(column_number+1),rate_list)
 
     total_rate_list.append(rate_list)
-
+    total_event_time_list.append(event_time_list)
+    total_event_length_list.append(event_length_list)
 
 # Define a sublist expand function to expand the zipped data
 def expand(lst):
@@ -283,13 +325,21 @@ for index in non_nan_columns_index:
 # Zip the column index with corresponding slope/rate information
 rate_information = list(zip(index_correspond_number, total_rate_list))
 
-# Expand the zipped data
-rate_list_prepare_csv = []
-for info in range(len(rate_information)):
-    rate_list_prepare_csv.append(expand(rate_information[info]))
+# Zip the column index with corresponding event duration information
+event_time_information = list(zip(index_correspond_number, total_event_time_list))
 
-# Store the rates information in to csv file
-rate_list_file_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv','w',newline='')
+# Zip the column index with corresponding event length information
+event_length_information = list(zip(index_correspond_number, total_event_length_list))
+
+# Expand the zipped rate and events data
+rate_event_list_prepare_csv = []
+for info in range(len(rate_information)):
+    rate_event_list_prepare_csv.append(expand(rate_information[info]))
+    rate_event_list_prepare_csv.append(expand(event_time_information[info]))
+    rate_event_list_prepare_csv.append(expand(event_length_information[info]))
+
+# Store the rates and events information in to csv file
+rate_list_file_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Event_List.csv','w',newline='')
 rate_list_writer_csv = csv.writer(rate_list_file_csv)
-for row in rate_list_prepare_csv:
+for row in rate_event_list_prepare_csv:
     rate_list_writer_csv.writerow(row)

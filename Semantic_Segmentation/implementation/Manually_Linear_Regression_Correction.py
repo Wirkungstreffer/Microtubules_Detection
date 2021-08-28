@@ -13,9 +13,9 @@ from sklearn import linear_model
 
 
 # Input the manually correction seeds number 
-correct_NO = 25
+correct_NO = 13
 # Input the manually correct breakpoints number, please input the breakpoints number larger than or equal 1
-correct_breakpoint_number = 5
+correct_breakpoint_number = 2
 
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
@@ -162,9 +162,18 @@ if breakpoint_number == 1:
     line_X = np.arange(X.min(), X.max())[:, np.newaxis]
     line_y_ransac = ransac.predict(line_X)
 
+    # Calculate duration that the event lasted
+    event_frame_length = max(X) - min(X)
+
     # Get the slope
     slopes = ransac.estimator_.coef_[0]
 
+    # Multiply event frame length and corresponding slope to get event length
+    event_length = []
+    for the_event in range(len(event_frame_length)):
+        the_event_length = (event_frame_length[the_event])*(slopes[the_event])
+        event_length.append(the_event_length)
+    
     # Draw and save the piecewise linear regression image
     plt.scatter(X[inlier_mask], y[inlier_mask], color='yellowgreen', marker='.', label='Inliers')
     plt.scatter(X[outlier_mask], y[outlier_mask], color='gold', marker='.', label='Outliers')
@@ -187,8 +196,20 @@ elif breakpoint_number > 1:
     for bp_number in breaks:
         breaks_int.append(round(bp_number))
 
+    # Subtract adjacent breakpoint to get the event frame length
+    event_frame_length = []
+    for event in range(len(breaks_int) - 1):
+        frame_length = breaks_int[event + 1] - breaks_int[event]
+        event_frame_length.append(frame_length)
+    
     # Get the first derivative of the linear regressions
     slopes = my_pwlf.calc_slopes()
+
+    # Multiply event frame length and corresponding slope to get event length
+    event_length = []
+    for the_event in range(len(event_frame_length)):
+        the_event_length = (event_frame_length[the_event])*(slopes[the_event])
+        event_length.append(the_event_length)
 
     # Make the linear regression prediction
     x_frame_number_hat = np.linspace(x_frame_number.min(), x_frame_number.max(), 10000)
@@ -220,28 +241,46 @@ for slope in slopes:
     rate = slope*(1/length_pixel_proportion)/frame_second_proportion
     rate_list.append(rate)
 
+# Store the event duration
+event_time_list = []
+for event_frame_length_case in event_frame_length:
+    time_real = event_frame_length_case*frame_second_proportion
+    event_time_list.append(time_real)
+
+# Store the event length
+event_length_list = []
+for event_length_case in event_length:
+    length_real = np.abs(event_length_case)/length_pixel_proportion
+    event_length_list.append(length_real)
+
 print("The rates of NO.%d: "%(column_number),rate_list)
 
 # Zip the column index with corresponding slope/rate information
 rate_information = list([column_number]) + list(rate_list)
 
+# Zip the column index with corresponding event duration information
+event_time_information = list([column_number]) + list(event_time_list)
+
+# Zip the column index with corresponding event length information
+event_length_information = list([column_number]) + list(event_length_list)
+
 # Read the old rate csv file
-first_column = []    
-rate_csv = open ('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv','r')
-rate_data = csv.reader(rate_csv)
-for column in rate_data:
-    if column:
-        first_column.append(int(column[0]))
+#first_column = []    
+#rate_csv = open ('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Event_List.csv','r')
+#rate_data = csv.reader(rate_csv)
+#for column in rate_data:
+#    if column:
+#        first_column.append(int(column[0]))
 
 # Store the old rate information into list
-total_rate_information = []
-with open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv') as df:
+total_rate_event_information = []
+with open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Event_List.csv') as df:
     for row in csv.reader(df, skipinitialspace=True):
-        total_rate_information.append(row)
+        total_rate_event_information.append(row)
 
 # Drop out the quote in the data
 without_quote_data = []
-for info in total_rate_information:
+for info in total_rate_event_information:
     without_quote =  list(map(float, info))
     without_quote[0] = int(without_quote[0])
     without_quote_data.append(without_quote)
@@ -254,11 +293,13 @@ delete_old_rate_csv = []
 for delete in range(len(without_quote_data)):
     delete_old_rate_csv.append(without_quote_data[delete])
 
-# Add the new corrected rates information into list
+# Add the new corrected rates and events information into list
 delete_old_rate_csv.append(rate_information)
+delete_old_rate_csv.append(event_time_information)
+delete_old_rate_csv.append(event_length_information)
 
 # Store the deleted old rates information in to csv file
-rate_list_writer_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_List.csv','w',newline='')
+rate_list_writer_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Event_List.csv','w',newline='')
 rate_list_writer_csv = csv.writer(rate_list_writer_csv)
 for rows in delete_old_rate_csv:
     rate_list_writer_csv.writerow(rows)
