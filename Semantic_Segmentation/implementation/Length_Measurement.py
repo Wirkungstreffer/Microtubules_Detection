@@ -19,9 +19,12 @@ import heapq
 #### Output of lengths information will be stored as csv file and some additional images to visualize the measurements ####
 
 
+# Change the tolerance pixels of seeds microtubules concatenation if adjustment is needed
+tolerance_pixels = 8
+
+
 # If cv2.imshow() function dosen't work, use the followed line of code
 os.environ['DISPLAY'] = ':1'
-
 
 # Define a images loading function
 def load_images(image_file_directory,channel):
@@ -268,7 +271,7 @@ seed_correspond_microtubules_length = []
 seed_correspond_microtubules_width = []
 
 # Set up deviation pixels tolerance
-tolerance = 8
+tolerance = tolerance_pixels
 
 # Create list to store the number of length
 Length_Micotubulues = []

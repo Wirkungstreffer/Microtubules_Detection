@@ -13,9 +13,9 @@ from sklearn import linear_model
 
 
 # Input the manually correction seeds number 
-correct_NO = 13
+correct_NO = 37
 # Input the manually correct breakpoints number, please input the breakpoints number larger than or equal 1
-correct_breakpoint_number = 2
+correct_breakpoint_number = 1
 
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
@@ -278,6 +278,12 @@ with open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Ev
     for row in csv.reader(df, skipinitialspace=True):
         total_rate_event_information.append(row)
 
+# Store total seeds number and seeds generate microtubules number
+total_seeds_number_and_microtubules = total_rate_event_information[0]
+
+# Remove the first string row
+total_rate_event_information = total_rate_event_information[1:]
+
 # Drop out the quote in the data
 without_quote_data = []
 for info in total_rate_event_information:
@@ -290,6 +296,10 @@ without_quote_data[:] = [row for row in without_quote_data  if correct_NO != row
 
 # Store the data into list
 delete_old_rate_csv = []
+
+# Store total seeds number and seeds generate microtubules number
+delete_old_rate_csv.append(total_seeds_number_and_microtubules)
+
 for delete in range(len(without_quote_data)):
     delete_old_rate_csv.append(without_quote_data[delete])
 

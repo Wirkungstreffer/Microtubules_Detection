@@ -1,3 +1,4 @@
+from numpy.core.fromnumeric import mean
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -12,37 +13,93 @@ from scipy.ndimage import gaussian_filter1d
 #### Output of microtubules rates information will be stored as csv file and some additional images to visualize the linear regressions ####
 
 
+# Define local percentage of total frames number in local extrame value detection if adjustment is needed
+local_percentage_of_total_frames_number = 0.1
+
+# The scale proportion
+frame_second_proportion = 5        # 5 sec per frame
+length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
+
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv", header=None)
 
-# Define a function to select non-zero column
+# Define a function to select non-negative column
 def select_non_nan_column(column):
     # Create a list to store selected column
     column_non_nan = []
     
-    # Filter all the zeros
+    # Filter all the negative
     for non_nan in column:
         if non_nan != -1:
             column_non_nan.append(non_nan)
 
     return column_non_nan
 
+# Define a function that eliminate outliers 
+def reject_outliers(data):
+    # Create a list to store filtered data
+    data_filtered = []
+    data_non_nan = []
+    
+    # Caculate mean and variance of the data
+    for n_z in data:
+        if n_z != -1:
+            data_non_nan.append(n_z)
+
+    u = np.mean(data_non_nan)
+    s = np.std(data_non_nan)
+
+    # Save the data within 2 standard deviation
+    for d in data_non_nan:
+        if (d>(u-2*s)) & (d<(u+2*s)):
+            data_filtered.append(d)
+    
+    return data_filtered
+
 # Create a list to store the non-zero column index
 non_nan_columns_index = []
 
-# Keep the non-zero columns
+# Keep the non-negative columns
 for column_loop in range(data_length_csv.shape[1]):
-    # Filter out Zero columns
+    # Filter out negative columns
     column_validation = select_non_nan_column(data_length_csv[data_length_csv.columns[column_loop]])
     
     # Filter out the falsh & miss detected column
-    if len(column_validation) >= 0.3*data_length_csv.shape[0]:
+    if len(column_validation) >= 0.2*data_length_csv.shape[0]:
         non_nan_columns_index.append(column_loop) 
 
+# Delete identical data
+identical_pair_list = []
 
-# The scale proportion
-frame_second_proportion = 5        # 5 sec per frame
-length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
+for columns in range(len(non_nan_columns_index)):
+    
+    # Read columns
+    columns_data = data_length_csv[data_length_csv.columns[non_nan_columns_index[columns]]]
+    
+    # Get data mean value and variance value
+    mean_value = np.mean(columns_data)
+    variance_value = np.var(columns_data)
+
+    # Compare with other columns
+    for other_columns in range(columns + 1, len(non_nan_columns_index)):
+        # Read other coulumns
+        other_columns_data = data_length_csv[data_length_csv.columns[non_nan_columns_index[other_columns]]]
+        
+        # Get other data mean value and variance value
+        other_mean_value = np.mean(other_columns_data)
+        other_vairance_value = np.var(other_columns_data)
+
+        # Calculate difference percentage
+        differ_mean = (np.abs(mean_value - other_mean_value))/(mean_value)
+        differ_variance = (np.abs(variance_value - other_vairance_value))/(variance_value)
+
+        # If the difference is too small, consider two columns are the same
+        if (differ_mean < 0.05) & (differ_variance < 0.05):
+            identical_pair_list.append(columns)
+            
+# Remove the identical column
+for identical_index in identical_pair_list:
+    non_nan_columns_index.remove(non_nan_columns_index[identical_index])
 
 # Create a list to store rate information
 total_rate_list = []
@@ -55,6 +112,8 @@ total_event_length_list = []
 
 # Create a list to store missed data number
 total_missing_data_list = []
+
+# Start the linear regression calculation
 for column_number in non_nan_columns_index:
     
     # Read the non-zero column
@@ -71,31 +130,13 @@ for column_number in non_nan_columns_index:
 
     # Plot the scatter data
     plt.scatter(original_x_frame_number, original_y_microtubules_length_array,marker='.')
+    plt.xlabel("Frame")
+    plt.ylabel("Microtubules Length")
+    plt.title("NO.%s Seed Corresponding Microtubules Lengths scatter plot"%(column_number+1))
     original_image_save_path = "Semantic_Segmentation/implementation/data_output/NO.%s_Seed_Corresponding_Microtubules_Lengths_Scatter_Image.png" %(column_number+1)
     plt.savefig(original_image_save_path)
     plt.clf()
     #plt.show()
-
-    # Define a function that eliminate outliers 
-    def reject_outliers(data):
-        # Create a list to store filtered data
-        data_filtered = []
-        data_non_nan = []
-        
-        # Caculate mean and variance of the data
-        for n_z in data:
-            if n_z != -1:
-                data_non_nan.append(n_z)
-
-        u = np.mean(data_non_nan)
-        s = np.std(data_non_nan)
-
-        # Save the data within 2 standard deviation
-        for d in data_non_nan:
-            if (d>(u-2*s)) & (d<(u+2*s)):
-                data_filtered.append(d)
-        
-        return data_filtered
 
     # Delete outliers
     Case_Microtubules_Delete_Outliers = reject_outliers(the_column)
@@ -114,7 +155,7 @@ for column_number in non_nan_columns_index:
     y_microtubules_length = Case_Microtubules_Delete_Outliers
 
     # Define the local with neighbor number
-    local_number = int(len(y_microtubules_length)*0.1)
+    local_number = int(len(y_microtubules_length)*local_percentage_of_total_frames_number)
 
     # Create local extreme index list
     minimal_index = []
@@ -240,6 +281,11 @@ for column_number in non_nan_columns_index:
         plt.clf()
 
     elif breakpoint_number > 1: 
+        
+        # The break points number larger than 8 is very rare phenomenon, in ordrt to save time, break points number is restricted to 8, if some data have more than 8 break points, use manually correction
+        if breakpoint_number >= 8:
+            breakpoint_number = 8
+        
         # Fit in the data
         my_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
         breaks = my_pwlf.fit(breakpoint_number)
@@ -322,6 +368,9 @@ index_correspond_number = []
 for index in non_nan_columns_index:
     index_correspond_number.append(index + 1)
 
+# Total seeds number and seeds generated microtubules
+total_seeds_number_and_microtubules = "Total seeds number:%d, seeds generate microtubules number:%d" %(data_length_csv.shape[1],len(non_nan_columns_index))
+
 # Zip the column index with corresponding slope/rate information
 rate_information = list(zip(index_correspond_number, total_rate_list))
 
@@ -333,6 +382,11 @@ event_length_information = list(zip(index_correspond_number, total_event_length_
 
 # Expand the zipped rate and events data
 rate_event_list_prepare_csv = []
+
+# Add seeds and microtubules number information into csv data
+total_seeds_number_and_microtubules = [total_seeds_number_and_microtubules]
+rate_event_list_prepare_csv.append(total_seeds_number_and_microtubules)
+
 for info in range(len(rate_information)):
     rate_event_list_prepare_csv.append(expand(rate_information[info]))
     rate_event_list_prepare_csv.append(expand(event_time_information[info]))

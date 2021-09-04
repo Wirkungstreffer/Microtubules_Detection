@@ -66,7 +66,7 @@ for column_loop_cnn in range(cnn_data_length_csv.shape[1]):
     column_validation_cnn = select_non_nan_column(cnn_data_length_csv[cnn_data_length_csv.columns[column_loop_cnn]])
     
     # Filter out the falsh & miss detected column
-    if len(column_validation_cnn) >= 0.4*cnn_data_length_csv.shape[0]:
+    if len(column_validation_cnn) >= 0.2*cnn_data_length_csv.shape[0]:
         non_nan_columns_index_cnn.append(column_loop_cnn+1)
 
 print("cnn alive seeds: ",len(non_nan_columns_index_cnn))
@@ -80,7 +80,7 @@ for column_loop_label in range(label_data_length_csv.shape[1]):
     column_validation_label = select_non_nan_column(label_data_length_csv[label_data_length_csv.columns[column_loop_label]])
     
     # Filter out the falsh & miss detected column
-    if len(column_validation_label) >= 0.4*label_data_length_csv.shape[0]:
+    if len(column_validation_label) >= 0.2*label_data_length_csv.shape[0]:
         non_nan_columns_index_label.append(column_loop_label+1)
 
 print("label alive seeds: ",len(non_nan_columns_index_label))
@@ -163,7 +163,7 @@ for column_loop_cnn_MT_label_seed in range(cnn_MT_label_seed_data_length_csv.sha
     column_validation_cnn_MT_label_seed = select_non_nan_column(cnn_MT_label_seed_data_length_csv[cnn_MT_label_seed_data_length_csv.columns[column_loop_cnn_MT_label_seed]])
     
     # Filter out the falsh & miss detected column
-    if len(column_validation_cnn_MT_label_seed) >= 0.4*cnn_MT_label_seed_data_length_csv.shape[0]:
+    if len(column_validation_cnn_MT_label_seed) >= 0.2*cnn_MT_label_seed_data_length_csv.shape[0]:
         non_nan_columns_index_cnn_MT_label_seed.append(column_loop_cnn_MT_label_seed+1)
 
 
