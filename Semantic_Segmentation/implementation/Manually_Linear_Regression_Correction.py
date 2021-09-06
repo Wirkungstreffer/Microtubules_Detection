@@ -13,9 +13,14 @@ from sklearn import linear_model
 
 
 # Input the manually correction seeds number 
-correct_NO = 37
+correct_NO = 15
 # Input the manually correct breakpoints number, please input the breakpoints number larger than or equal 1
-correct_breakpoint_number = 1
+correct_breakpoint_number = 2
+
+
+# Use the scale proportion to get the rate
+frame_second_proportion = 5        # 5 sec per frame
+length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
 
 # Read the csv file
 data_length_csv = pd.read_csv("Semantic_Segmentation/implementation/data_output/Microtubules_Lengths_with_Seed_Concatenation.csv")
@@ -231,38 +236,58 @@ elif breakpoint_number > 1:
 
 print("The breakpoint of NO.%d is:"%(column_number),breakpoint_number)
 
-# Use the scale proportion to get the rate
-frame_second_proportion = 5        # 5 sec per frame
-length_pixel_proportion = 9.1287   # 9.1287 pixel per uM
-
-# Store the rate
+# Create lists to store information
 rate_list = []
-for slope in slopes:
-    rate = slope*(1/length_pixel_proportion)/frame_second_proportion
-    rate_list.append(rate)
+positive_rate_list = []
+negative_rate_list = []
 
-# Store the event duration
 event_time_list = []
-for event_frame_length_case in event_frame_length:
-    time_real = event_frame_length_case*frame_second_proportion
+positive_event_time_list = []
+negative_event_time_list = []
+
+event_length_list = []
+positive_event_length_list = []
+negative_event_length_list = []
+
+for slope_index in range(len(slopes)):
+    # Store the rate
+    rate = slopes[slope_index]*(1/length_pixel_proportion)/frame_second_proportion
+    rate_list.append(rate)
+    
+    # Store the event duration
+    time_real = event_frame_length[slope_index]*frame_second_proportion
     event_time_list.append(time_real)
 
-# Store the event length
-event_length_list = []
-for event_length_case in event_length:
-    length_real = np.abs(event_length_case)/length_pixel_proportion
+    # Store the event length
+    length_real = np.abs(event_length[slope_index])/length_pixel_proportion
     event_length_list.append(length_real)
+
+    # Store the event information depend on the rate positive or negative character
+    if rate > 0:
+        positive_rate_list.append(rate)
+        positive_event_time_list.append(time_real)
+        positive_event_length_list.append(length_real)
+    elif rate < 0:
+        negative_rate_list.append(rate)
+        negative_event_time_list.append(time_real)
+        negative_event_length_list.append(length_real)
 
 print("The rates of NO.%d: "%(column_number),rate_list)
 
 # Zip the column index with corresponding slope/rate information
 rate_information = list([column_number]) + list(rate_list)
+positive_rate_information = list([column_number]) + list(positive_rate_list)
+negative_rate_information = list([column_number]) + list(negative_rate_list)
 
 # Zip the column index with corresponding event duration information
 event_time_information = list([column_number]) + list(event_time_list)
+positive_event_time_information = list([column_number]) + list(positive_event_time_list)
+negative_event_time_information = list([column_number]) + list(negative_event_time_list)
 
 # Zip the column index with corresponding event length information
 event_length_information = list([column_number]) + list(event_length_list)
+positive_event_length_information = list([column_number]) + list(positive_event_length_list)
+negative_event_length_information = list([column_number]) + list(negative_event_length_list)
 
 # Read the old rate csv file
 #first_column = []    
@@ -278,11 +303,26 @@ with open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Ev
     for row in csv.reader(df, skipinitialspace=True):
         total_rate_event_information.append(row)
 
+total_positive_rate_event_information = []
+with open('Semantic_Segmentation/implementation/data_output/Microtubules_Positive_Rate_Event_List.csv') as df:
+    for positive_row in csv.reader(df, skipinitialspace=True):
+        total_positive_rate_event_information.append(positive_row)
+
+total_negative_rate_event_information = []
+with open('Semantic_Segmentation/implementation/data_output/Microtubules_Negative_Rate_Event_List.csv') as df:
+    for negative_row in csv.reader(df, skipinitialspace=True):
+        total_negative_rate_event_information.append(negative_row)
+
+    
 # Store total seeds number and seeds generate microtubules number
 total_seeds_number_and_microtubules = total_rate_event_information[0]
+total_seeds_number_and_microtubules = total_positive_rate_event_information[0]
+total_seeds_number_and_microtubules = total_negative_rate_event_information[0]
 
 # Remove the first string row
 total_rate_event_information = total_rate_event_information[1:]
+total_positive_rate_event_information = total_positive_rate_event_information[1:]
+total_negative_rate_event_information = total_negative_rate_event_information[1:]
 
 # Drop out the quote in the data
 without_quote_data = []
@@ -291,22 +331,54 @@ for info in total_rate_event_information:
     without_quote[0] = int(without_quote[0])
     without_quote_data.append(without_quote)
 
+without_quote_positive_data = []
+for positive_info in total_positive_rate_event_information:
+    positive_without_quote =  list(map(float, positive_info))
+    positive_without_quote[0] = int(positive_without_quote[0])
+    without_quote_positive_data.append(positive_without_quote)
+
+without_quote_negative_data = []
+for negative_info in total_negative_rate_event_information:
+    negative_without_quote =  list(map(float, negative_info))
+    negative_without_quote[0] = int(negative_without_quote[0])
+    without_quote_negative_data.append(negative_without_quote)
+
 # Delete the selected old rate data
 without_quote_data[:] = [row for row in without_quote_data  if correct_NO != row[0]]
+without_quote_positive_data[:] = [positive_row for positive_row in without_quote_positive_data  if correct_NO != positive_row[0]]
+without_quote_negative_data[:] = [negative_row for negative_row in without_quote_negative_data  if correct_NO != negative_row[0]]
 
 # Store the data into list
 delete_old_rate_csv = []
+delete_old_positive_rate_csv = []
+delete_old_negative_rate_csv = []
 
 # Store total seeds number and seeds generate microtubules number
 delete_old_rate_csv.append(total_seeds_number_and_microtubules)
+delete_old_positive_rate_csv.append(total_seeds_number_and_microtubules)
+delete_old_negative_rate_csv.append(total_seeds_number_and_microtubules)
 
 for delete in range(len(without_quote_data)):
     delete_old_rate_csv.append(without_quote_data[delete])
+
+for positive_delete in range(len(without_quote_positive_data)):
+    delete_old_positive_rate_csv.append(without_quote_positive_data[positive_delete])
+
+for negative_delete in range(len(without_quote_negative_data)):
+    delete_old_negative_rate_csv.append(without_quote_negative_data[negative_delete])
 
 # Add the new corrected rates and events information into list
 delete_old_rate_csv.append(rate_information)
 delete_old_rate_csv.append(event_time_information)
 delete_old_rate_csv.append(event_length_information)
+
+delete_old_positive_rate_csv.append(positive_rate_information)
+delete_old_positive_rate_csv.append(positive_event_time_information)
+delete_old_positive_rate_csv.append(positive_event_length_information)
+
+delete_old_negative_rate_csv.append(negative_rate_information)
+delete_old_negative_rate_csv.append(negative_event_time_information)
+delete_old_negative_rate_csv.append(negative_event_length_information)
 
 # Store the deleted old rates information in to csv file
 rate_list_writer_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Event_List.csv','w',newline='')
@@ -314,7 +386,17 @@ rate_list_writer_csv = csv.writer(rate_list_writer_csv)
 for rows in delete_old_rate_csv:
     rate_list_writer_csv.writerow(rows)
 
+# Store the deleted old positive rates information in to csv file
+positive_rate_list_writer_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Positive_Rate_Event_List.csv','w',newline='')
+positive_rate_list_writer_csv = csv.writer(positive_rate_list_writer_csv)
+for positive_rows in delete_old_positive_rate_csv:
+    positive_rate_list_writer_csv.writerow(positive_rows)
 
+# Store the deleted old negative rates information in to csv file
+negative_rate_list_writer_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Negative_Rate_Event_List.csv','w',newline='')
+negative_rate_list_writer_csv = csv.writer(negative_rate_list_writer_csv)
+for negative_rows in delete_old_negative_rate_csv:
+    negative_rate_list_writer_csv.writerow(negative_rows)
 
 
 

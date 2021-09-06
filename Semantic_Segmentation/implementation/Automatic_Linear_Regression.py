@@ -103,12 +103,18 @@ for identical_index in identical_pair_list:
 
 # Create a list to store rate information
 total_rate_list = []
+total_positive_rate_list = []
+total_negative_rate_list = []
 
 # Create a list to store event time information
 total_event_time_list = []
+total_positive_event_time_list = []
+total_negative_event_time_list = []
 
 # Create a list to store event length information
 total_event_length_list = []
+total_positive_event_length_list = []
+total_negative_event_length_list = []
 
 # Create a list to store missed data number
 total_missing_data_list = []
@@ -330,29 +336,56 @@ for column_number in non_nan_columns_index:
 
     print("The breakpoint of NO.%d seed corresponding microtubule is:"%(column_number+1),breakpoint_number)
 
-    # Store the rate
+    # Create lists to store information
     rate_list = []
-    for slope in slopes:
-        rate = slope*(1/length_pixel_proportion)/frame_second_proportion
-        rate_list.append(rate)
-
-    # Store the event duration
+    positive_rate_list = []
+    negative_rate_list = []
+    
     event_time_list = []
-    for event_frame_length_case in event_frame_length:
-        time_real = event_frame_length_case*frame_second_proportion
+    positive_event_time_list = []
+    negative_event_time_list = []
+
+    event_length_list = []
+    positive_event_length_list = []
+    negative_event_length_list = []
+
+    for slope_index in range(len(slopes)):
+        # Store the rate
+        rate = slopes[slope_index]*(1/length_pixel_proportion)/frame_second_proportion
+        rate_list.append(rate)
+        
+        # Store the event duration
+        time_real = event_frame_length[slope_index]*frame_second_proportion
         event_time_list.append(time_real)
 
-    # Store the event length
-    event_length_list = []
-    for event_length_case in event_length:
-        length_real = np.abs(event_length_case)/length_pixel_proportion
+        # Store the event length
+        length_real = np.abs(event_length[slope_index])/length_pixel_proportion
         event_length_list.append(length_real)
+
+        # Store the event information depend on the rate positive or negative character
+        if rate > 0:
+            positive_rate_list.append(rate)
+            positive_event_time_list.append(time_real)
+            positive_event_length_list.append(length_real)
+        elif rate < 0:
+            negative_rate_list.append(rate)
+            negative_event_time_list.append(time_real)
+            negative_event_length_list.append(length_real)
+
 
     print("The rates of NO.%d seed corresponding microtubule: "%(column_number+1),rate_list)
 
     total_rate_list.append(rate_list)
+    total_positive_rate_list.append(positive_rate_list)
+    total_negative_rate_list.append(negative_rate_list)
+
     total_event_time_list.append(event_time_list)
+    total_positive_event_time_list.append(positive_event_time_list)
+    total_negative_event_time_list.append(negative_event_time_list)
+
     total_event_length_list.append(event_length_list)
+    total_positive_event_length_list.append(positive_event_length_list)
+    total_negative_event_length_list.append(negative_event_length_list)
 
 # Define a sublist expand function to expand the zipped data
 def expand(lst):
@@ -373,27 +406,61 @@ total_seeds_number_and_microtubules = "Total seeds number:%d, seeds generate mic
 
 # Zip the column index with corresponding slope/rate information
 rate_information = list(zip(index_correspond_number, total_rate_list))
+positive_rate_information = list(zip(index_correspond_number, total_positive_rate_list))
+negative_rate_information = list(zip(index_correspond_number, total_negative_rate_list))
 
 # Zip the column index with corresponding event duration information
 event_time_information = list(zip(index_correspond_number, total_event_time_list))
+positive_event_time_information = list(zip(index_correspond_number, total_positive_event_time_list))
+negative_event_time_information = list(zip(index_correspond_number, total_negative_event_time_list))
 
 # Zip the column index with corresponding event length information
 event_length_information = list(zip(index_correspond_number, total_event_length_list))
+positive_event_length_information = list(zip(index_correspond_number, total_positive_event_length_list))
+negative_event_length_information = list(zip(index_correspond_number, total_negative_event_length_list))
 
 # Expand the zipped rate and events data
 rate_event_list_prepare_csv = []
+positive_rate_event_list_prepare_csv = []
+negative_rate_event_list_prepare_csv = []
 
 # Add seeds and microtubules number information into csv data
 total_seeds_number_and_microtubules = [total_seeds_number_and_microtubules]
 rate_event_list_prepare_csv.append(total_seeds_number_and_microtubules)
+positive_rate_event_list_prepare_csv.append(total_seeds_number_and_microtubules)
+negative_rate_event_list_prepare_csv.append(total_seeds_number_and_microtubules)
 
+# Store inforamtion into csv lists
 for info in range(len(rate_information)):
     rate_event_list_prepare_csv.append(expand(rate_information[info]))
     rate_event_list_prepare_csv.append(expand(event_time_information[info]))
     rate_event_list_prepare_csv.append(expand(event_length_information[info]))
+
+for positive_info in range(len(positive_rate_information)):
+    positive_rate_event_list_prepare_csv.append(expand(positive_rate_information[positive_info]))
+    positive_rate_event_list_prepare_csv.append(expand(positive_event_time_information[positive_info]))
+    positive_rate_event_list_prepare_csv.append(expand(positive_event_length_information[positive_info]))
+
+for negative_info in range(len(negative_rate_information)):
+    negative_rate_event_list_prepare_csv.append(expand(negative_rate_information[negative_info]))
+    negative_rate_event_list_prepare_csv.append(expand(negative_event_time_information[negative_info]))
+    negative_rate_event_list_prepare_csv.append(expand(negative_event_length_information[negative_info]))
+
 
 # Store the rates and events information in to csv file
 rate_list_file_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Rate_Event_List.csv','w',newline='')
 rate_list_writer_csv = csv.writer(rate_list_file_csv)
 for row in rate_event_list_prepare_csv:
     rate_list_writer_csv.writerow(row)
+
+# Store the positive rates and events information in to csv file 
+positive_rate_list_file_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Positive_Rate_Event_List.csv','w',newline='')
+positive_rate_list_writer_csv = csv.writer(positive_rate_list_file_csv)
+for positive_row in positive_rate_event_list_prepare_csv:
+    positive_rate_list_writer_csv.writerow(positive_row)
+
+# Store the negative rates and events information in to csv file 
+negative_rate_list_file_csv = open('Semantic_Segmentation/implementation/data_output/Microtubules_Negative_Rate_Event_List.csv','w',newline='')
+negative_rate_list_writer_csv = csv.writer(negative_rate_list_file_csv)
+for negative_row in negative_rate_event_list_prepare_csv:
+    negative_rate_list_writer_csv.writerow(negative_row)
