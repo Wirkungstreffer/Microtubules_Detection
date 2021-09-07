@@ -674,15 +674,15 @@ videoWriter.release()
 cv2.destroyAllWindows()
 
 # Set the seeds images and predictions saving path
-prediction_composite_path = "Semantic_Segmentation/implementation/data_output/prediction_composite"
+#prediction_composite_path = "Semantic_Segmentation/implementation/data_output/prediction_composite"
 
-if os.path.exists(prediction_composite_path)==False:
-    os.makedirs(prediction_composite_path)
+#if os.path.exists(prediction_composite_path)==False:
+#    os.makedirs(prediction_composite_path)
 
 # Save the predictions into the implementation_output folder
-for n in range(0, frame-1):
-    prediction_add = prediction_measurements_images_list[n]
+#for n in range(0, frame-1):
+#    prediction_add = prediction_measurements_images_list[n]
 
     # Change the names of prediction for recognition and further easy to load
-    implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
-    io.imsave(implementation_prediction_save_path, prediction_add)
+    #implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
+    #io.imsave(implementation_prediction_save_path, prediction_add)
