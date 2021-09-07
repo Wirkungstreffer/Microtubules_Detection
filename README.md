@@ -51,7 +51,7 @@ To implement into new sequence after model is trained:
 (If needed)Trained network model download link: https://drive.google.com/file/d/1DcdysUrOZF6n4mP0bd7U7637yIShauK7/view?usp=sharing
 (Make sure the trained network("MT_1216_Semantic_Segmentation.h5") is in the folder "Microtubules_Detection-master/Semantic_Segmentation/")
 
-1. Backup the last implementation data, run Delete_Last_Implementation_Data.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
+1. Backup the last implemented data, run Delete_Last_Implementation_Data.py in folder "Microtubules_Detection-master/Semantic_Segmentation/implementation/"
 
 2. Put ND2 video into folder "Microtubules_Detection-master/Data_Process/ND2_Video/", and seeds ND2 file into folder "Microtubules_Detection-master/Data_Process/ND2_Seeds/".
 
