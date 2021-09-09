@@ -286,12 +286,38 @@ for column_number in non_nan_columns_index:
         plt.savefig(pwlf_image_save_path)
         plt.clf()
 
-    elif breakpoint_number > 1: 
+    elif breakpoint_number > 1:
+        print("original breakpoint number",breakpoint_number)
+        # Make sure the adjacent rates are positive and negative opposite
+        positive_negative_opposite_judgment = 0
+        judge_breakpoint_number = breakpoint_number
+
+        while (positive_negative_opposite_judgment == 1)|(judge_breakpoint_number == 2):
+            # Calculate all slopes in current breakpoint numbers setting
+            judge_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
+            judge_break = judge_pwlf.fit(judge_breakpoint_number)
+            judge_slopes = judge_pwlf.calc_slopes()
+            judge_list = []
+            
+            # Judge if adjacent rates are positive and negative opposite
+            for the_judge_slope in range(len(judge_slopes)-1):
+                previous_slope = judge_slopes[the_judge_slope]
+                later_slope = judge_slopes[the_judge_slope]
+                if previous_slope*later_slope < 0:
+                    judge_list.append(-1)
+                elif previous_slope*later_slope > 0:
+                    judge_list.append(1)
+            
+            # If all adjacent rates are positive and negative opposite break the loop, otherwise breakpoints number minus one
+            if all(s < 0 for s in judge_list):
+                positive_negative_opposite_judgment = 1
+            else:
+                positive_negative_opposite_judgment = 0
+                judge_breakpoint_number = judge_breakpoint_number - 1
+
         
-        # The break points number larger than 8 is very rare phenomenon, in ordrt to save time, break points number is restricted to 8, if some data have more than 8 break points, use manually correction
-        if breakpoint_number >= 8:
-            breakpoint_number = 8
-        
+        print("judge breakpoint number",judge_breakpoint_number)
+
         # Fit in the data
         my_pwlf = pwlf.PiecewiseLinFit(x_frame_number_array, y_microtubules_length)
         breaks = my_pwlf.fit(breakpoint_number)
@@ -334,7 +360,7 @@ for column_number in non_nan_columns_index:
         plt.savefig(pwlf_image_save_path)
         plt.clf()
 
-    print("The breakpoint of NO.%d seed corresponding microtubule is:"%(column_number+1),breakpoint_number)
+    #print("The breakpoint of NO.%d seed corresponding microtubule is:"%(column_number+1),breakpoint_number)
 
     # Create lists to store information
     rate_list = []
