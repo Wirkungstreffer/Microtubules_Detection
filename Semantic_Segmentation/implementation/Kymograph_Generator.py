@@ -936,14 +936,12 @@ for kymo in range(len(kymograph_images_sequence)):
 
     kymograph = np.concatenate((kymograph_images_sequence[kymo]), axis=1)
     inverse_kymograph = np.concatenate((inverse_kymograph_images_sequence[kymo]), axis=1)
-    
+
     cv2.imwrite("Semantic_Segmentation/implementation/data_output/Seed_%d_Corresponding_Kymograph.png" % (non_nan_columns_index[kymo]+1), kymograph)
     cv2.imwrite("Semantic_Segmentation/implementation/data_output/Seed_%d_Corresponding_Inverse_Kymograph.png" % (non_nan_columns_index[kymo]+1), inverse_kymograph)
 
     kymograph_list.append(kymograph)
     inverse_kymograph_list.append(inverse_kymograph)
 
-cv2.imshow("kymograph",kymograph)
-cv2.waitKey(0)
 
 
