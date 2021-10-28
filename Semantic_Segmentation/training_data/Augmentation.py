@@ -45,9 +45,6 @@ def load_images(image_file_directory):
 images_path = "Semantic_Segmentation/training_data/images/" 
 masks_path = "Semantic_Segmentation/training_data/labels/"
 
-test_images_path = "Semantic_Segmentation/training_data/image_test/"
-test_masks_path = "Semantic_Segmentation/training_data/label_test/"
-
 
 # Set the augmented images and labels saving path
 img_augmented_path = "Semantic_Segmentation/training_data/images_aug/"
@@ -57,21 +54,10 @@ msk_augmented_path = "Semantic_Segmentation/training_data/labels_aug/"
 if os.path.exists(msk_augmented_path)==False:
     os.makedirs(msk_augmented_path)
 
-test_img_augmented_path = "Semantic_Segmentation/training_data/test_images_aug/"
-if os.path.exists(test_img_augmented_path)==False:
-    os.makedirs(test_img_augmented_path) 
-test_msk_augmented_path = "Semantic_Segmentation/training_data/test_labels_aug/"
-if os.path.exists(test_msk_augmented_path)==False:
-    os.makedirs(test_msk_augmented_path)
 
 # Load images and labels 
 images = load_images(images_path)
 masks = load_images(masks_path)
-
-test_images = load_images(test_images_path)
-test_masks = load_images(test_masks_path)
-
-
 
 # Set up augmentation function
 aug = A.Compose([
@@ -107,7 +93,7 @@ while img_number < len(images):
     # For each image do the quantity of "loop" randomly augmentation
     loop = 0
     
-    while loop < 6:
+    while loop <= 6:
         # Apply augmentation
         augmented = aug(image = original_image, mask = original_mask)
         transformed_image = augmented['image']
