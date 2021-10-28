@@ -85,11 +85,11 @@ train_images = load_and_padding_images("Semantic_Segmentation/training_data/imag
 # Capture training augmented labels as a list
 train_labels = load_and_padding_images("Semantic_Segmentation/training_data/labels_aug",1)
 
-# Load test set images as a list
-test_images = load_and_padding_images("Semantic_Segmentation/training_data/image_test",3)
+# Load validation set images as a list
+validation_images = load_and_padding_images("Semantic_Segmentation/training_data/image_validation",3)
 
-# Load test set labels as a list
-test_labels = load_and_padding_images("Semantic_Segmentation/training_data/label_test",1)
+# Load validation set labels as a list
+validation_labels = load_and_padding_images("Semantic_Segmentation/training_data/label_validation",1)
 
 
 # Create a list with the same length of training data
@@ -104,42 +104,42 @@ for i in range(len(train_images)):
     train_images[i] = train_images[arr[i]]
     train_labels[i] = train_labels[arr[i]]
 
-# Create a list with the same length of test data set
-test_data_size = test_images.shape[0]
+# Create a list with the same length of validation data set
+validation_data_size = validation_images.shape[0]
 
 # Random shuffle the list
-test_arr = np.arange(test_data_size)
-np.random.shuffle(test_arr)
+validation_arr = np.arange(validation_data_size)
+np.random.shuffle(validation_arr)
 
 # Set the shuffled list to the data set
-for j in range(len(test_images)):
-    test_images[j] = test_images[test_arr[j]]
-    test_labels[j] = test_labels[test_arr[j]]
+for j in range(len(validation_images)):
+    validation_images[j] = validation_images[validation_arr[j]]
+    validation_labels[j] = validation_labels[validation_arr[j]]
 
 
 # Load customary x_train and y_train variables
 X = train_images
 Y = train_labels
 
-X_test = test_images
-Y_test = test_labels
+X_val = validation_images
+Y_val = validation_labels
 
 # Expand the dimension of label images for machine learning processing
 Y = np.expand_dims(Y, axis=3)
-Y_test = np.expand_dims(Y_test, axis=3) 
+Y_val = np.expand_dims(Y_val, axis=3) 
 
 # Normalize the label images to make sure it is [0,1] binary images
 Y = tf.keras.utils.normalize(Y)
-Y_test = tf.keras.utils.normalize(Y_test)
+Y_val = tf.keras.utils.normalize(Y_val)
 
 # Sanity check, view the quantities of data sets and visualize few images
 imgsize1 = X.shape
 print(imgsize1)
 imgsize2 = Y.shape
 print(imgsize2)
-imgsize3 = X_test.shape
+imgsize3 = X_val.shape
 print(imgsize3)
-imgsize4 = Y_test.shape
+imgsize4 = Y_val.shape
 print(imgsize4)
 
 # Select random image in training dataset to visualize
@@ -151,12 +151,12 @@ cv2.waitKey(3000)
 cv2.imshow("Y train",Y[image_number])
 cv2.waitKey(3000)
 
-test_image_number = random.randint(0, len(X_test)-1)
+validation_image_number = random.randint(0, len(X_val)-1)
 
-cv2.imshow("X test",X_test[image_number])
+cv2.imshow("X validation",X_val[image_number])
 cv2.waitKey(3000)
 
-cv2.imshow("Y test",Y_test[image_number])
+cv2.imshow("Y validation",Y_val[image_number])
 cv2.waitKey(3000)
 
 # Define and set up training model
@@ -201,14 +201,14 @@ checkpointer = tf.keras.callbacks.ModelCheckpoint('MT_1216_Semantic_Segmentation
 callbacks = [#tf.keras.callbacks.EarlyStopping(patience = 4,monitor='val_iou_score'), 
              tf.keras.callbacks.TensorBoard(log_dir = './Semantic_Segmentation/logs')]
 
-# Training input: 1500 augmented images as training set and 60 images as test set with image size 1216x1216
+# Training input: 1500 augmented images as training set and 60 images as validation set with image size 1216x1216
 # Tensor dimensions: 1216x1216x3 --- 608x608x64 --- 304x304x128 --- 152x152x256 --- 76x76x512 --- 38x38x1024 
 history = model.fit(X, Y, 
                     batch_size = 2, 
                     #verbose = 1, 
                     epochs = 60, 
                     callbacks=callbacks,
-                    validation_data=(X_test, Y_test)
+                    validation_data=(X_val, Y_val)
                     #shuffle=False
                     )
 
