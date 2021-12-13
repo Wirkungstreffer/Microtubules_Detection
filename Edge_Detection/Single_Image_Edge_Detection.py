@@ -1,5 +1,5 @@
 import os
-os.environ['DISPLAY'] = ':1'
+#os.environ['DISPLAY'] = ':1'
 from scipy.spatial import distance as dist
 from imutils import perspective
 from imutils import contours
@@ -19,11 +19,11 @@ def midpoint(ptA, ptB):
 	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
 # read imgae
-tiff_image = cv2.imread("Edge_Detection/Composite_z001_c001.tif", cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
-image = cv2.normalize(tiff_image, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-
+#tiff_image = cv2.imread("Edge_Detection/8bit_tiff_file/Composite_z002_c002.tif", cv2.IMREAD_ANYCOLOR | cv2.IMREAD_ANYDEPTH)
+#image = cv2.normalize(tiff_image, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+image = cv2.imread("Edge_Detection/input_image/200818_Xb_Reaction2_6uM003_016.png", cv2.IMREAD_COLOR)
 imgsize = image.shape
-print(imgsize)
+#print(imgsize)
 image_D_E = cv2.dilate(image, None, iterations=1) - cv2.erode(image, None, iterations=1) 
 #cv2.imshow("image_D_E", image_D_E)
 # gray grade
@@ -58,7 +58,7 @@ edged = cv2.erode(edged, None, iterations=1)
 cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 cnts = imutils.grab_contours(cnts)
 
-print(len(cnts))
+#print(len(cnts))
 
 # order the sequence from left to right of the object
 if len(cnts) > 0:
@@ -81,6 +81,9 @@ trbrY_list = []
 
 dA_list = []
 dB_list = []
+
+endpoints_list = []
+microtubules_length = []
 
 # for loop for all contour
 for c in cnts:
@@ -119,7 +122,6 @@ for c in cnts:
 	trbrX_list.append(trbrX)
 	trbrY_list.append(trbrY)
 
-
 	#cv2.circle(orig, (int(tltrX), int(tltrY)), 5, (255, 0, 0), -1)
 	#cv2.circle(orig, (int(blbrX), int(blbrY)), 5, (255, 0, 0), -1)
 	#cv2.circle(orig, (int(tlblX), int(tlblY)), 5, (255, 0, 0), -1)
@@ -134,6 +136,12 @@ for c in cnts:
 	dA_list.append(dA)
 	dB_list.append(dB)
 
+	if dA < dB:
+		endpoints_list.append(((tlblX, tlblY), (trbrX, trbrY)))
+		microtubules_length.append(dB)
+	else:
+		endpoints_list.append(((tltrX, tltrY), (blbrX, blbrY)))
+		microtubules_length.append(dA)
 	#if pixelsPerMetric is None:
 	#	pixelsPerMetric = dB / imgsize[1]
 
@@ -162,11 +170,12 @@ trbrY_list = np.array(trbrY_list)
 
 img = image.copy()
 for i in range(len(tltrX_list)):
-	cv2.line(img, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
-	cv2.line(img, (int(tlblX_list[i]), int(tlblY_list[i])), (int(trbrX_list[i]), int(trbrY_list[i])),(255, 0, 255), 2)
-	cv2.putText(img, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
-	cv2.putText(img, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 255, 255), 2)
-cv2.imshow("Image", img)
+	#cv2.line(img, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
+	cv2.circle(img, (int(endpoints_list[i][0][0]), int(endpoints_list[i][0][1])),2, (0, 255, 255), -1)
+	cv2.circle(img, (int(endpoints_list[i][1][0]), int(endpoints_list[i][1][1])),2, (0, 255, 255), -1)
+	#cv2.putText(img, "{:.1f}".format(dA_list[i]), (int(tltrX_list[i] - 15), int(tltrY_list[i] - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2)
+	cv2.putText(img, "{:d}".format(i), (int(endpoints_list[i][0][0] + 10), int(endpoints_list[i][0][1])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
+#cv2.imshow("Image", img)
 
 img_box = image.copy()
 for k in range(len(boxes)):
@@ -174,6 +183,7 @@ for k in range(len(boxes)):
 #cv2.imshow("Image_box", img_box)
 
 orig = image.copy()
-cv2.imshow("Image_orig", orig)
-
+cv2.imshow("predicted_image", img)
 cv2.waitKey(0)
+
+cv2.imwrite("Edge_Detection/Edge_detection_predicted_image.png", img)

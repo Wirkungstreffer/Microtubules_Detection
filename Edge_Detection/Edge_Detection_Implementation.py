@@ -14,12 +14,9 @@ from skimage import io
 #### Outputs of seed image predictions will be stored in folder "prediction_seed" #### 
 
 # Github cannot creat blank folder, so some txt files was create to maintain the folder, clear them would be better
-def remove_inessential_files():
-  if os.path.exists("Semantic_Segmentation/implementation/input_image/input_image.txt"):
-    os.remove("Semantic_Segmentation/implementation/input_image/input_image.txt")
 
 # Clear the redundant txt files
-remove_inessential_files()
+#remove_inessential_files()
 
 # Define a images path and name reading function
 def delete_end_str(path):
