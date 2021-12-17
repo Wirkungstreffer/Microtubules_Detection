@@ -439,40 +439,40 @@ def getGrayDiff(img,currentPoint,tmpPoint):
     return abs(int(img[currentPoint.x,currentPoint.y]) - int(img[tmpPoint.x,tmpPoint.y]))
 
 def selectConnects(p):
-    #if p != 0:
-	connects = [Point(-1, -1), Point(0, -1), Point(1, -1), Point(1, 0), Point(1, 1), Point(0, 1), Point(-1, 1), Point(-1, 0)]
-    #else:
-        #connects = [ Point(0, -1),  Point(1, 0), Point(0, 1), Point(-1, 0)]
+	if p != 0:
+	    connects = [Point(-1, -1), Point(0, -1), Point(1, -1), Point(1, 0), Point(1, 1), Point(0, 1), Point(-1, 1), Point(-1, 0)]
+	else:
+		connects = [ Point(0, -1),  Point(1, 0), Point(0, 1), Point(-1, 0)]
 	return connects
 
-def regionGrow(img,seeds,thresh,p = 1):
+def regionGrow(img,initials,thresh,p = 1):
     height, weight = img.shape
-    seedMark = np.zeros(img.shape)
-    seedList = []
-    for seed in seeds:
-        seedList.append(seed)
+    intial_Mark = np.zeros(img.shape)
+    intial_List = []
+    for init_point in initials:
+        intial_List.append(init_point)
     label = 1
     connects = selectConnects(p)
-    while(len(seedList)>0):
-        currentPoint = seedList.pop(0)
- 
-        seedMark[currentPoint.x,currentPoint.y] = label
+    while(len(intial_List)>0):
+        currentPoint = intial_List.pop(0)
+        intial_Mark[currentPoint.x,currentPoint.y] = label
         for i in range(8):
             tmpX = currentPoint.x + connects[i].x
             tmpY = currentPoint.y + connects[i].y
             if tmpX < 0 or tmpY < 0 or tmpX >= height or tmpY >= weight:
                 continue
             grayDiff = getGrayDiff(img,currentPoint,Point(tmpX,tmpY))
-            if grayDiff < thresh and seedMark[tmpX,tmpY] == 0:
-                seedMark[tmpX,tmpY] = label
-                seedList.append(Point(tmpX,tmpY))
-    return seedMark
+            if grayDiff < thresh and intial_Mark[tmpX,tmpY] == 0:
+                intial_Mark[tmpX,tmpY] = label
+                intial_List.append(Point(tmpX,tmpY))
+    return intial_Mark
 
 
 gauss_2_copy_3 = gauss_2.copy()
 #cv2.imshow('gauss_2_copy_3',gauss_2_copy_3)
-seeds = [Point(int(center_x_list_2[1]), int(center_y_list_2[1]))]#,Point(int(center_x_list_2[2]), int(center_y_list_2[2])),Point(int(center_x_list_2[3]), int(center_y_list_2[3]))]
-RGImg = regionGrow(closing_2, seeds, 3)
+intials = [Point(int(0), int(0))]#,Point(int(center_x_list_2[2]), int(center_y_list_2[2])),Point(int(center_x_list_2[3]), int(center_y_list_2[3]))]
+RGImg = regionGrow(closing_2, intials, 3)
+print(closing_2.shape)
 cv2.imshow('Region Growing',RGImg)
 
 cv2.waitKey(0)
