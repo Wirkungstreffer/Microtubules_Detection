@@ -33,7 +33,7 @@ Neural network training guide:
 
 1. Clone repository
 
-2. Download data from the link: https://drive.google.com/file/d/1lGBidoPvOS4NNZUAArCJNOjuyDw_x_bH/view?usp=sharing
+2. Download data from the link: https://drive.google.com/file/d/1xiVPbgRNmHnDyBE8pZbU0m_WMcuC1Kf8/view?usp=sharing
 
 3. Extract the data, move the images in folder "images" to the repository folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/images",
 move the labels in folder "labels" to the repository folder "Microtubules_Detection-master/Semantic_Segmentation/training_data/labels".
