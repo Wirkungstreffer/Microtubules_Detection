@@ -20,7 +20,7 @@ import heapq
 
 
 # Change the tolerance pixels of seeds microtubules concatenation if adjustment is needed
-tolerance_pixels = 8
+tolerance_pixels = 12
 
 
 # If cv2.imshow() function dosen't work, use the followed line of code
@@ -530,7 +530,7 @@ for image in array_of_predict_input_image:
                 correspond_mt.append(mt) 
                 seed_endpoint_validation_number = 2
             else:
-                correspond_mt.append(len(microtubules_endpoints_list) + 200)
+                correspond_mt.append(len(microtubules_endpoints_list) + 20000)
 
         # Make the stored list into sublist according to each seed
         for mt_number in range(0,len(correspond_mt),len(microtubules_endpoints_list)):
@@ -540,15 +540,15 @@ for image in array_of_predict_input_image:
         # Find the microtubules corresponding to the seed, sometimes there could be two microtubules in both seeds endpoints
         correspond_indexes = []
         for index_number in range(len(correspond_mt_per_seed[0])):
-            if correspond_mt_per_seed[0][index_number] < (len(microtubules_endpoints_list) + 200):
+            if correspond_mt_per_seed[0][index_number] < (len(microtubules_endpoints_list) + 20000):
                 correspond_indexes.append(index_number)
 
         # Only need the longer microtubules, delete the shorter microtubules information
         if len(correspond_indexes) == 2:
             if dB_list[correspond_indexes[0]] > dB_list[correspond_indexes[1]]:
-                correspond_mt_per_seed[0][correspond_indexes[1]] = len(microtubules_endpoints_list) + 200
+                correspond_mt_per_seed[0][correspond_indexes[1]] = len(microtubules_endpoints_list) + 20000
             elif dB_list[correspond_indexes[0]] < dB_list[correspond_indexes[1]]:
-                correspond_mt_per_seed[0][correspond_indexes[0]] = len(microtubules_endpoints_list) + 200
+                correspond_mt_per_seed[0][correspond_indexes[0]] = len(microtubules_endpoints_list) + 20000
         
         # Find the corresponding index for each seed
         for the_index in correspond_mt_per_seed:
@@ -557,7 +557,7 @@ for image in array_of_predict_input_image:
         
         # Save the seed corresponding microtubules length information to the seed_correspond_microtubules lists
         for x in range(len(min_index_list)):
-            if min_val_list[x] == len(microtubules_endpoints_list) + 200 :
+            if min_val_list[x] == len(microtubules_endpoints_list) + 20000 :
                 seed_correspond_microtubules_length.append(-1)
             elif seed_endpoint_validation_number == 1 :
                 #seed_correspond_microtubules_length.append(dB_list[min_index_list[x]])   dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
@@ -600,7 +600,8 @@ for image in array_of_predict_input_image:
     predict_add_img = cv2.add(predict_seed_image[0],image)
 
     # Draw the length & width line and the number
-    predict_composite = image
+    predict_frame_image = add_img.copy()
+    predict_composite = predict_frame_image
     for k in range(len(microtubules_endpoints_list)):
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(tltrX_list[i]), int(tltrY_list[i])), (int(blbrX_list[i]), int(blbrY_list[i])),(255, 0, 255), 2)
@@ -609,19 +610,19 @@ for image in array_of_predict_input_image:
         #cv2.putText(orignal_composite, "{:.1f}".format(dB_list[i]), (int(trbrX_list[i] + 10), int(trbrY_list[i])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (255, 0, 255), 2)
         #cv2.circle(predict_composite, (int(tltrX_list[k]), int(tltrY_list[k])), 2, (255, 255, 255), -1)
         #cv2.circle(predict_composite, (int(blbrX_list[k]), int(blbrY_list[k])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(microtubules_endpoints_list[k][0][0]), int(microtubules_endpoints_list[k][0][1])), 2, (255, 255, 255), -1)
-        cv2.circle(predict_composite, (int(microtubules_endpoints_list[k][1][0]), int(microtubules_endpoints_list[k][1][1])), 2, (255, 255, 255), -1)
+        cv2.circle(predict_composite, (int(microtubules_endpoints_list[k][0][0]), int(microtubules_endpoints_list[k][0][1])), 2, (255, 0, 255), -1)
+        cv2.circle(predict_composite, (int(microtubules_endpoints_list[k][1][0]), int(microtubules_endpoints_list[k][1][1])), 2, (255, 0, 255), -1)
 
     for l in range(len(seed_endpoints_list)):
         # Draw lines and informations of microtubules
         #cv2.line(orignal_composite, (int(seed_tltrX_list[l]), int(seed_tltrY_list[l])), (int(seed_blbrX_list[l]), int(seed_blbrY_list[l])),(0, 255, 255), 2)
         #cv2.line(orignal_composite, (int(seed_tlblX_list[l]), int(seed_tlblY_list[l])), (int(seed_trbrX_list[l]), int(seed_trbrY_list[l])),(0, 255, 255), 2)
-        cv2.putText(predict_composite, "{:d}".format(l+1), (int(seed_endpoints_list[l][0][0] - 15), int(seed_endpoints_list[l][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (255, 255, 255), 2)
+        cv2.putText(predict_composite, "{:d}".format(l+1), (int(seed_endpoints_list[l][0][0] - 15), int(seed_endpoints_list[l][0][1] - 10)), cv2.FONT_HERSHEY_DUPLEX, 0.55, (255, 255, 0), 2)
         #cv2.putText(orignal_composite, "{:.1f}".format(seed_dB_list[j]), (int(seed_trbrX_list[j] + 10), int(seed_trbrY_list[j])), cv2.FONT_HERSHEY_SIMPLEX,0.65, (0, 255, 255), 2)
         #cv2.circle(orignal_composite, (int(seed_tltrX_list[j]), int(seed_tltrY_list[j])), 2, (0, 255, 255), -1)
         #cv2.circle(orignal_composite, (int(seed_blbrX_list[j]), int(seed_blbrY_list[j])), 2, (0, 255, 255), -1)
-        cv2.circle(predict_composite, (int(seed_endpoints_list[l][0][0]), int(seed_endpoints_list[l][0][1])), 2, (0, 255, 255), -1)
-        cv2.circle(predict_composite, (int(seed_endpoints_list[l][1][0]), int(seed_endpoints_list[l][1][1])), 2, (0, 255, 255), -1)
+        cv2.circle(predict_composite, (int(seed_endpoints_list[l][0][0]), int(seed_endpoints_list[l][0][1])), 2, (255, 255, 0), -1)
+        cv2.circle(predict_composite, (int(seed_endpoints_list[l][1][0]), int(seed_endpoints_list[l][1][1])), 2, (255, 255, 0), -1)
 
     # Add the visualized measurement to the list
     prediction_measurements_images_list.append(predict_composite)
@@ -674,15 +675,15 @@ videoWriter.release()
 cv2.destroyAllWindows()
 
 # Set the seeds images and predictions saving path
-#prediction_composite_path = "Semantic_Segmentation/implementation/data_output/prediction_composite"
+prediction_composite_path = "Semantic_Segmentation/implementation/data_output/prediction_composite"
 
-#if os.path.exists(prediction_composite_path)==False:
-#    os.makedirs(prediction_composite_path)
+if os.path.exists(prediction_composite_path)==False:
+    os.makedirs(prediction_composite_path)
 
 # Save the predictions into the implementation_output folder
-#for n in range(0, frame-1):
-#    prediction_add = prediction_measurements_images_list[n]
+for n in range(0, frame-1):
+    prediction_add = prediction_measurements_images_list[n]
 
     # Change the names of prediction for recognition and further easy to load
-    #implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
-    #io.imsave(implementation_prediction_save_path, prediction_add)
+    implementation_prediction_save_path = "%s/prediction_composite_frame_%s.png"% (prediction_composite_path, (n+1))
+    io.imsave(implementation_prediction_save_path, prediction_add)
