@@ -9,7 +9,6 @@ from skimage import io
 import tensorflow as tf
 from tensorflow import keras
 
-
 #### This script will get the predictions of input images ####
 #### The inputs frame images of microtubules should be put in the folder "input_image" ####
 #### The seed image should be put in the folder "seed_image" ####
