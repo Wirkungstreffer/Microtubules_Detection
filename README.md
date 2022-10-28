@@ -1,5 +1,5 @@
 Microtubules Detections
-![prediction_composite_frame_23](https://user-images.githubusercontent.com/35823389/198718125-a6ab6fe8-1b7b-441e-a978-8507a50b1e5d.png)
+![prediction_composite_frame_27](https://user-images.githubusercontent.com/35823389/198718302-70c048dd-5f1f-4def-a7b6-9314d2c27111.png)
 
 Readme
 
